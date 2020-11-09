@@ -3,26 +3,11 @@ using System.Security.Cryptography;
 
 namespace Lib6502.Tests
 {
-    public class AssemblerTests
+    public class AssemblerDisassembleTests
     {
         [SetUp]
         public void Setup()
         {
-        }
-
-        [Test, Ignore("")]
-        public void AssembleAddWithCarryInImmediateMode()
-        {
-
-            string[] codeLines = { "ADC #$44 ; add the hex value 44 to the accumulator" };
-
-            byte[] actual = Lib6502.Assembler.Assemble(codeLines);
-
-            Assert.AreEqual(2, actual.Length, "Expected 2 bytes of code");
-            Assert.AreEqual(0x69, actual[0], "Did not generate the correct opcode");
-            Assert.AreEqual(0x44, actual[1], "Did not generate the correct operand");
-            Assert.Fail();
-
         }
 
         #region ADC
@@ -1102,6 +1087,167 @@ namespace Lib6502.Tests
         }
         #endregion
 
+        #region NOP
+        [Test]
+        public void DisassembleNOP()
+        {
+            byte[] machineCode = new byte[] { 0xEA };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("NOP", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleNOPofTwo()
+        {
+            byte[] machineCode = new byte[] { 0xEA, 0xEA };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(2, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("NOP", codeLines[0]);
+            Assert.AreEqual("NOP", codeLines[1]);
+        }
+
+        #endregion
+
+        #region ORA
+        [Test]
+        public void DisassembleORAWithABS()
+        {
+            byte[] machineCode = new byte[] { 0x0D, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithABX()
+        {
+            byte[] machineCode = new byte[] { 0x1D, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA $4400,X", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithABY()
+        {
+            byte[] machineCode = new byte[] { 0x19, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA $4400,Y", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithIMM()
+        {
+            byte[] machineCode = new byte[] { 0x09, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA #$44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithIZX()
+        {
+            byte[] machineCode = new byte[] { 0x01, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA ($44,X)", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithIZY()
+        {
+            byte[] machineCode = new byte[] { 0x11, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA ($44),Y", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0x05, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleORAWithZPX()
+        {
+            byte[] machineCode = new byte[] { 0x15, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ORA $44,X", codeLines[0]);
+        }
+        #endregion
+
+        #region Register
+        [Test]
+        public void DisassembleDEX()
+        {
+            byte[] machineCode = new byte[] { 0xCA };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("DEX", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleDEY()
+        {
+            byte[] machineCode = new byte[] { 0x88 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("DEY", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleINX()
+        {
+            byte[] machineCode = new byte[] { 0xE8 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("INX", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleINY()
+        {
+            byte[] machineCode = new byte[] { 0xC8 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("INY", codeLines[0]);
+        }
+
         [Test]
         public void DisassembleTAX()
         {
@@ -1145,6 +1291,465 @@ namespace Lib6502.Tests
             Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
             Assert.AreEqual("TYA", codeLines[0]);
         }
+        #endregion
 
+        #region ROL
+        [Test]
+        public void DisassembleROLWithABS()
+        {
+            byte[] machineCode = new byte[] { 0x2E, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROL $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleROLWithABX()
+        {
+            byte[] machineCode = new byte[] { 0x3E, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROL $4400,X", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleROLWithACC()
+        {
+            byte[] machineCode = new byte[] { 0x2A };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROL A", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleROLWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0x26, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROL $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleROLWithZPX()
+        {
+            byte[] machineCode = new byte[] { 0x36, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROL $44,X", codeLines[0]);
+        }
+        #endregion
+
+        #region ROR
+        [Test]
+        public void DisassembleRORWithABS()
+        {
+            byte[] machineCode = new byte[] { 0x6E, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROR $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleRORWithABX()
+        {
+            byte[] machineCode = new byte[] { 0x7E, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROR $4400,X", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleRORWithACC()
+        {
+            byte[] machineCode = new byte[] { 0x6A };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROR A", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleRORWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0x66, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROR $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleRORWithZPX()
+        {
+            byte[] machineCode = new byte[] { 0x76, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("ROR $44,X", codeLines[0]);
+        }
+        #endregion
+
+        #region RTI
+        [Test]
+        public void DisassembleRTI()
+        {
+            byte[] machineCode = new byte[] { 0x40 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("RTI", codeLines[0]);
+        }
+        #endregion
+
+        #region RTS
+        [Test]
+        public void DisassembleRTS()
+        {
+            byte[] machineCode = new byte[] { 0x60 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("RTS", codeLines[0]);
+        }
+        #endregion
+
+        #region SBC
+        [Test]
+        public void DisassembleSBCWithABS()
+        {
+            byte[] machineCode = new byte[] { 0xED, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithABX()
+        {
+            byte[] machineCode = new byte[] { 0xFD, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC $4400,X", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithABY()
+        {
+            byte[] machineCode = new byte[] { 0xF9, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC $4400,Y", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithIMM()
+        {
+            byte[] machineCode = new byte[] { 0xE9, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC #$44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithIZX()
+        {
+            byte[] machineCode = new byte[] { 0xE1, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC ($44,X)", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithIZY()
+        {
+            byte[] machineCode = new byte[] { 0xF1, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC ($44),Y", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0xE5, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSBCWithZPX()
+        {
+            byte[] machineCode = new byte[] { 0xF5, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, 2);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("SBC $44,X", codeLines[0]);
+        }
+        #endregion
+
+        #region STA
+        [Test]
+        public void DisassembleSTAWithABS()
+        {
+            byte[] machineCode = new byte[] { 0x8D, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTAWithABX()
+        {
+            byte[] machineCode = new byte[] { 0x9D, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA $4400,X", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTAWithABY()
+        {
+            byte[] machineCode = new byte[] { 0x99, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA $4400,Y", codeLines[0]);
+        }
+
+        //[Test]
+        //public void DisassembleSTAWithIMM()
+        //{
+        //    byte[] machineCode = new byte[] { 0xA9, 0x44 };
+
+        //    string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+        //    Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+        //    Assert.AreEqual("STA #$44", codeLines[0]);
+        //}
+
+        [Test]
+        public void DisassembleSTAWithIZX()
+        {
+            byte[] machineCode = new byte[] { 0x81, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA ($44,X)", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTAWithIZY()
+        {
+            byte[] machineCode = new byte[] { 0x91, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA ($44),Y", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTAWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0x85, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTAWithZPX()
+        {
+            byte[] machineCode = new byte[] { 0x95, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STA $44,X", codeLines[0]);
+        }
+        #endregion
+
+        #region Stack
+        [Test]
+        public void DisassemblePHA()
+        {
+            byte[] machineCode = new byte[] { 0x48 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("PHA", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassemblePHP()
+        {
+            byte[] machineCode = new byte[] { 0x08 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("PHP", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassemblePLA()
+        {
+            byte[] machineCode = new byte[] { 0x68 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("PLA", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassemblePLP()
+        {
+            byte[] machineCode = new byte[] { 0x28 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("PLP", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleTSX()
+        {
+            byte[] machineCode = new byte[] { 0xBA };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("TSX", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleTXS()
+        {
+            byte[] machineCode = new byte[] { 0x9A };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("TXS", codeLines[0]);
+        }
+
+        #endregion
+
+        #region STX
+        [Test]
+        public void DisassembleSTXWithABS()
+        {
+            byte[] machineCode = new byte[] { 0x8E, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STX $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTXWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0x86, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STX $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTXWithZPY()
+        {
+            byte[] machineCode = new byte[] { 0x96, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STX $44,Y", codeLines[0]);
+        }
+        #endregion
+
+        #region STY
+        [Test]
+        public void DisassembleSTYWithABS()
+        {
+            byte[] machineCode = new byte[] { 0x8C, 0x00, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STY $4400", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTYWithZP0()
+        {
+            byte[] machineCode = new byte[] { 0x84, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STY $44", codeLines[0]);
+        }
+
+        [Test]
+        public void DisassembleSTYWithZPX()
+        {
+            byte[] machineCode = new byte[] { 0x94, 0x44 };
+
+            string[] codeLines = Lib6502.Assembler.Disassemble(machineCode, (uint)machineCode.Length);
+
+            Assert.AreEqual(1, codeLines.Length, "Expected 1 line of code");
+            Assert.AreEqual("STY $44,X", codeLines[0]);
+        }
+        #endregion
     }
 }
