@@ -73,13 +73,15 @@ namespace Lib6502
         {
             var rv = new Collection<byte>();
 
-            var accumulator = new Regex("A");
+            var implied = new Regex(@"^$");
+            var accumulator = new Regex("^([A])");
             var immediate = new Regex(@"^\#\$(\d\d)$");
             var zeroPage = new Regex(@"^\$(\d\d)(?:,([XY]))?$");
             var absolute = new Regex(@"^\$(\d\d\d\d)(?:,([XY]))?$");
-            var indirect = new Regex(@"^\(\$(\d\d)(?:(?:(\d\d)\))|(?:\,([X])\))|(?:\)\,([Y])))");
+            var indirect = new Regex(@"^\(\$(\d{4})\)|\(\$(\d{2})\,([X])\)|\(\$(\d{2})\)\,([Y])");
+            var relative = new Regex(@"^\$(\d\d)$");
 
-            foreach(string line in codeLines)
+            foreach (string line in codeLines)
             {
                 // break out comments from code
                 string[] code_comment_parts = line.Trim().Split(';');
@@ -88,7 +90,9 @@ namespace Lib6502
                 string[] code_parts = code_comment_parts[0].Split(' ');
 
                 string pnuemonic = code_parts[0];
-                string operand1 = code_parts[1];
+                string operand1 = "";
+                if(code_parts.Length > 1)
+                    operand1 = code_parts[1];
                 string operand2 = "";
 
                 byte[] value = null;
@@ -99,13 +103,35 @@ namespace Lib6502
 
                 // if the operand starts with a #$, then it is an actual value
                 // so use immediate mode
-                if (immediate.IsMatch(operand1))
+                if (implied.IsMatch(operand1))
+                {
+                    mode = AddressMode.IMP;
+                }
+                else if (accumulator.IsMatch(operand1))
+                {
+                    mode = AddressMode.ACC;
+                }
+                else if (immediate.IsMatch(operand1))
                 {
                     matches = immediate.Matches(operand1);
 
                     value = ConvertToByteArray(matches[0].Groups[1].Value);
 
                     mode = AddressMode.IMM;
+                }
+                else if (relative.IsMatch(operand1) && pnuemonic[0] == 'B' && String.Compare("BIT", pnuemonic, true) != 0)
+                {
+                    // branch logic looks like zero page references, except all
+                    // relative addresses are associated with branch logic
+                    // which all start with 'B'
+                    //
+                    // The BIT pnuemonic starts with a B but it has no relative address modes, let it fall through 
+                    // so Zero Page Address mode can pick it up.
+                    matches = zeroPage.Matches(operand1);
+
+                    value = ConvertToByteArray(matches[0].Groups[1].Value);
+
+                    mode = AddressMode.REL;
                 }
                 else if (zeroPage.IsMatch(operand1))
                 {
@@ -115,15 +141,15 @@ namespace Lib6502
 
                     mode = AddressMode.ZP0;
 
-                    if(matches[0].Groups.Count > 2 && matches[0].Groups[2].Length > 0)
+                    if (matches[0].Groups.Count > 2 && matches[0].Groups[2].Length > 0)
                     {
                         operand2 = matches[0].Groups[2].Value;
 
-                        if(operand2 == "X")
+                        if (operand2 == "X")
                         {
                             mode = AddressMode.ZPX;
                         }
-                        else if(operand2 == "Y")
+                        else if (operand2 == "Y")
                         {
                             mode = AddressMode.ZPY;
                         }
@@ -139,9 +165,9 @@ namespace Lib6502
 
                     mode = AddressMode.ABS;
 
-                    if (matches[0].Groups.Count > 2 && matches[0].Groups[2].Value != "" )
+                    if (matches[0].Groups.Count > 2 && matches[0].Groups[2].Value != "")
                     {
-                        if(matches[0].Groups[2].Value == "X")
+                        if (matches[0].Groups[2].Value == "X")
                         {
                             mode = AddressMode.ABX;
                         }
@@ -152,7 +178,7 @@ namespace Lib6502
                         else
                             throw new Exception(String.Format("Invalid register (%s) used with %s pnuemonic", operand2, pnuemonic));
                     }
-                    else if(matches[0].Groups[1].Value != "")
+                    else if (matches[0].Groups[1].Value != "")
                     {
                     }
                 }
@@ -164,22 +190,32 @@ namespace Lib6502
 
                     mode = AddressMode.IND;
 
-                    if (matches[0].Groups.Count > 2)
+                    if (matches[0].Groups[2].Value != "" |
+                        matches[0].Groups[3].Value != "" |
+                        matches[0].Groups[4].Value != "" |
+                        matches[0].Groups[5].Value != "")
                     {
                         if (matches[0].Groups[3].Value == "X")
                         {
+                            value = ConvertToByteArray(matches[0].Groups[2].Value);
+
                             mode = AddressMode.IZX;
                         }
-                        else if (matches[0].Groups[4].Value == "Y")
+                        else if (matches[0].Groups[5].Value == "Y")
                         {
+                            value = ConvertToByteArray(matches[0].Groups[4].Value);
                             mode = AddressMode.IZY;
                         }
+                        else if (matches[0].Groups[1].Value != "")
+                        {
+                        }
                         else
-                            throw new Exception(String.Format("Invalid register (%s) used with %s pnuemonic", operand2, pnuemonic));
+                            throw new Exception(String.Format("Invalid operand %s used with pnuemonic %s", code_parts[1], pnuemonic));
                     }
-                    else if (matches[0].Groups[1].Value != "")
-                    {
-                    }
+                }
+                else if (0 == String.Compare("BRK", pnuemonic, true))
+                {
+                    mode = AddressMode.IMP;
                 }
                 else
                 {
@@ -187,19 +223,22 @@ namespace Lib6502
                 }
 
                 Instruction? foundInstruction = instructions
-                    .SingleOrDefault(i => i.Pnuemonic == code_parts[0] && i.Mode == mode);
+                    .SingleOrDefault(i => i.Pnuemonic == pnuemonic && i.Mode == mode);
 
-                if(foundInstruction == null)
+                if(!foundInstruction.HasValue)
                     throw new Exception(String.Format("%s is not a valid pnuemonic", code_parts[0]));
 
                 rv.Add(Convert.ToByte(foundInstruction?.Opcode));
-                if (value.Length > 1)
+                if (value != null)
                 {
-                    rv.Add(value[1]);
-                    rv.Add(value[0]);
+                    if (value.Length > 1)
+                    {
+                        rv.Add(value[1]);
+                        rv.Add(value[0]);
+                    }
+                    else
+                        rv.Add(value[0]);
                 }
-                else
-                    rv.Add(value[0]);
             }
 
             return rv.ToArray();
