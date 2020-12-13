@@ -30,14 +30,14 @@ namespace Lib6502
 
     public struct Instruction
     {
-        public string Pnuemonic { get; }
+        public string Mnemonic { get; }
         public AddressMode Mode { get; }
         public byte Opcode { get; }
         public int Length { get; }
 
-        public Instruction(string pnuemonic, byte opcode, AddressMode mode, int length)
+        public Instruction(string mnemonic, byte opcode, AddressMode mode, int length)
         {
-            Pnuemonic = pnuemonic;
+            Mnemonic = mnemonic;
             Opcode = opcode;
             Mode = mode;
             Length = length;
@@ -75,21 +75,21 @@ namespace Lib6502
 
             var implied = new Regex(@"^$");
             var accumulator = new Regex("^([A])");
-            var immediate = new Regex(@"^\#\$(\d\d)$");
-            var zeroPage = new Regex(@"^\$(\d\d)(?:,([XY]))?$");
-            var absolute = new Regex(@"^\$(\d\d\d\d)(?:,([XY]))?$");
-            var indirect = new Regex(@"^\(\$(\d{4})\)|\(\$(\d{2})\,([X])\)|\(\$(\d{2})\)\,([Y])");
-            var relative = new Regex(@"^\$(\d\d)$");
+            var immediate = new Regex(@"^\#\$([0-9A-Fa-f]{2})$");
+            var zeroPage = new Regex(@"^\$([0-9A-Fa-f]{2})(?:,([XY]))?$");
+            var absolute = new Regex(@"^\$([0-9A-Fa-f]{4})(?:,([XY]))?$");
+            var indirect = new Regex(@"^\(\$([0-9A-Fa-f]{4})\)|\(\$([0-9A-Fa-f]{2})\,([X])\)|\(\$([0-9A-Fa-f]{2})\)\,([Y])");
+            var relative = new Regex(@"^\$([0-9A-Fa-f]{2})$");
 
             foreach (string line in codeLines)
             {
                 // break out comments from code
                 string[] code_comment_parts = line.Trim().Split(';');
 
-                // break up code / comment parts into code parts (pnuemonic operand [, operand])
+                // break up code / comment parts into code parts (mnemonic operand [, operand])
                 string[] code_parts = code_comment_parts[0].Split(' ');
 
-                string pnuemonic = code_parts[0];
+                string mnemonic = code_parts[0];
                 string operand1 = "";
                 if(code_parts.Length > 1)
                     operand1 = code_parts[1];
@@ -119,13 +119,13 @@ namespace Lib6502
 
                     mode = AddressMode.IMM;
                 }
-                else if (relative.IsMatch(operand1) && pnuemonic[0] == 'B' && String.Compare("BIT", pnuemonic, true) != 0)
+                else if (relative.IsMatch(operand1) && mnemonic[0] == 'B' && String.Compare("BIT", mnemonic, true) != 0)
                 {
                     // branch logic looks like zero page references, except all
                     // relative addresses are associated with branch logic
                     // which all start with 'B'
                     //
-                    // The BIT pnuemonic starts with a B but it has no relative address modes, let it fall through 
+                    // The BIT mnemonic starts with a B but it has no relative address modes, let it fall through 
                     // so Zero Page Address mode can pick it up.
                     matches = zeroPage.Matches(operand1);
 
@@ -154,7 +154,7 @@ namespace Lib6502
                             mode = AddressMode.ZPY;
                         }
                         else
-                            throw new Exception(String.Format("Invalid register (%s) used with %s pnuemonic", operand2, pnuemonic));
+                            throw new Exception(String.Format("Invalid register (%s) used with %s mnemonic", operand2, mnemonic));
                     }
                 }
                 else if (absolute.IsMatch(operand1))
@@ -176,7 +176,7 @@ namespace Lib6502
                             mode = AddressMode.ABY;
                         }
                         else
-                            throw new Exception(String.Format("Invalid register (%s) used with %s pnuemonic", operand2, pnuemonic));
+                            throw new Exception(String.Format("Invalid register (%s) used with %s mnemonic", operand2, mnemonic));
                     }
                     else if (matches[0].Groups[1].Value != "")
                     {
@@ -210,10 +210,10 @@ namespace Lib6502
                         {
                         }
                         else
-                            throw new Exception(String.Format("Invalid operand %s used with pnuemonic %s", code_parts[1], pnuemonic));
+                            throw new Exception(String.Format("Invalid operand %s used with mnemonic %s", code_parts[1], mnemonic));
                     }
                 }
-                else if (0 == String.Compare("BRK", pnuemonic, true))
+                else if (0 == String.Compare("BRK", mnemonic, true))
                 {
                     mode = AddressMode.IMP;
                 }
@@ -223,10 +223,10 @@ namespace Lib6502
                 }
 
                 Instruction? foundInstruction = instructions
-                    .SingleOrDefault(i => i.Pnuemonic == pnuemonic && i.Mode == mode);
+                    .SingleOrDefault(i => i.Mnemonic == mnemonic && i.Mode == mode);
 
                 if(!foundInstruction.HasValue)
-                    throw new Exception(String.Format("%s is not a valid pnuemonic", code_parts[0]));
+                    throw new Exception(String.Format("%s is not a valid mnemonic", code_parts[0]));
 
                 rv.Add(Convert.ToByte(foundInstruction?.Opcode));
                 if (value != null)
@@ -257,7 +257,7 @@ namespace Lib6502
                 //if (length < instruction.Length)
                 //    throw new ArgumentOutOfRangeException("Memory length is less than the instruction length");
 
-                string line = instruction.Pnuemonic;
+                string line = instruction.Mnemonic;
 
                 if (0 == String.Compare(line, "???", true))
                     throw new InvalidProgramException(String.Format("Unknown instruction opcode {0:X2}", opcode ));

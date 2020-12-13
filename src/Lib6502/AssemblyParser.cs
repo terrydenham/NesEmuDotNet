@@ -13,9 +13,9 @@ namespace Lib6502
         {
             var rv = new Collection<byte>();
 
-            var pnuemonic = new StringBuilder();
+            var mnemonic = new StringBuilder();
 
-            bool foundPnuemonic = false;
+            bool foundMnemonic = false;
             AddressMode addressMode = AddressMode.IMP;
 
             do
@@ -42,9 +42,9 @@ namespace Lib6502
 
                 if(Char.IsLetter(c))
                 {
-                    pnuemonic.Append(c);
+                    mnemonic.Append(c);
 
-                    if(pnuemonic.Length == 3)
+                    if(mnemonic.Length == 3)
                     {
 
                     }
