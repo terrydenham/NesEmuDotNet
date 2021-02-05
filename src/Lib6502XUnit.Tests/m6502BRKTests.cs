@@ -9,12 +9,11 @@ namespace Lib6502XUnit.Tests
     {
         [Theory]
         [MemberData(nameof(Data))]
-        public void Breal(string[] instructions, byte a, byte x, byte y, CpuFlags initialFlags, byte expectedValue, byte expectedCycles, CpuFlags expectedFlags, Action<Memory> memoryCallback)
+        public void Break(string[] instructions, byte a, byte x, byte y, CpuFlags initialFlags, byte expectedValue, byte expectedCycles, CpuFlags expectedFlags, Action<Memory> memoryCallback)
         {
             var mem = new Memory(1024 * 32);
 
-            if (memoryCallback != null)
-                memoryCallback(mem);
+            memoryCallback?.Invoke(mem);
 
             var codeBytes = Assembler.Assemble(instructions);
 

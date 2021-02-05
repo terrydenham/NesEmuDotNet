@@ -13,8 +13,7 @@ namespace Lib6502XUnit.Tests
         {
             var mem = new Memory(1024 * 32);
 
-            if (memoryCallback != null)
-                memoryCallback(mem);
+            memoryCallback?.Invoke(mem);
 
             var codeBytes = Assembler.Assemble(instructions);
 

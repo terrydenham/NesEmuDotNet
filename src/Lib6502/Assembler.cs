@@ -69,6 +69,11 @@ namespace Lib6502
 });
         }
 
+        public static byte[] Assemble(string codeLine)
+        {
+            return Assemble(new string[] { codeLine });
+        }
+
         public static byte[] Assemble(string[] codeLines) 
         {
             var rv = new Collection<byte>();

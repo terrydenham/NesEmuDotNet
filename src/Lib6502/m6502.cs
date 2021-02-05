@@ -62,22 +62,22 @@ namespace Lib6502
         {
 
             Instructions = new ReadOnlyCollection<CpuInstruction>(new[] {
-    new CpuInstruction("BRK", this.IMP, this.BRK, 1, 7), new CpuInstruction("ORA", this.IZX, this.ORA, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ORA", this.ZP0, this.ORA, 2, 3), new CpuInstruction("ASL", this.ZP0, this.ASL, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PHP", this.IMP, this.PHP, 1, 3), new CpuInstruction("ORA", this.IMM, this.ORA, 2, 2), new CpuInstruction("ASL", this.ACC, this.ASL, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ORA", this.ABS, this.ORA, 3, 4), new CpuInstruction("ASL", this.ABS, this.ASL, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BPL", this.REL, this.BPL, 2, 2), new CpuInstruction("ORA", this.IZY, this.ORA, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ORA", this.ZPX, this.ORA, 2, 4), new CpuInstruction("ASL", this.ZPX, this.ASL, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLC", this.IMP, this.CLC, 1, 2), new CpuInstruction("ORA", this.ABY, this.ORA, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ORA", this.ABX, this.ORA, 3, 4), new CpuInstruction("ASL", this.ABX, this.ASL, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("JSR", this.ABS, this.JSR, 3, 6), new CpuInstruction("AND", this.IZX, this.AND, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("BIT", this.ZP0, this.BIT, 2, 3), new CpuInstruction("AND", this.ZP0, this.AND, 2, 3), new CpuInstruction("ROL", this.ZP0, this.ROL, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PLP", this.IMP, this.PLP, 1, 4), new CpuInstruction("AND", this.IMM, this.AND, 2, 2), new CpuInstruction("ROL", this.ACC, this.ROL, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("BIT", this.ABS, this.BIT, 3, 4), new CpuInstruction("AND", this.ABS, this.AND, 3, 4), new CpuInstruction("ROL", this.ABS, this.ROL, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BMI", this.REL, this.BMI, 2, 2), new CpuInstruction("AND", this.IZY, this.AND, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("AND", this.ZPX, this.AND, 2, 4), new CpuInstruction("ROL", this.ZPX, this.ROL, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SEC", this.IMP, this.SEC, 1, 2), new CpuInstruction("AND", this.ABY, this.AND, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("AND", this.ABX, this.AND, 3, 4), new CpuInstruction("ROL", this.ABX, this.ROL, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("RTI", this.IMP, this.RTI, 1, 6), new CpuInstruction("EOR", this.IZX, this.EOR, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("EOR", this.ZP0, this.EOR, 2, 3), new CpuInstruction("LSR", this.ZP0, this.LSR, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PHA", this.IMP, this.PHA, 1, 3), new CpuInstruction("EOR", this.IMM, this.EOR, 2, 2), new CpuInstruction("LSR", this.ACC, this.LSR, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("JMP", this.ABS, this.JMP, 3, 3), new CpuInstruction("EOR", this.ABS, this.EOR, 3, 4), new CpuInstruction("LSR", this.ABS, this.LSR, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BVC", this.REL, this.BVC, 2, 2), new CpuInstruction("EOR", this.IZY, this.EOR, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("EOR", this.ZPX, this.EOR, 2, 4), new CpuInstruction("LSR", this.ZPX, this.LSR, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLI", this.IMP, this.CLI, 1, 2), new CpuInstruction("EOR", this.ABY, this.EOR, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("EOR", this.ABX, this.EOR, 3, 4), new CpuInstruction("LSR", this.ABX, this.LSR, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("RTS", this.IMP, this.RTS, 1, 6), new CpuInstruction("ADC", this.IZX, this.ADC, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ADC", this.ZP0, this.ADC, 2, 3), new CpuInstruction("ROR", this.ZP0, this.ROR, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PLA", this.IMP, this.PLA, 1, 4), new CpuInstruction("ADC", this.IMM, this.ADC, 2, 2), new CpuInstruction("ROR", this.ACC, this.ROR, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("JMP", this.IND, this.JMP, 3, 5), new CpuInstruction("ADC", this.ABS, this.ADC, 3, 4), new CpuInstruction("ROR", this.ABS, this.ROR, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BVS", this.REL, this.BVS, 2, 2), new CpuInstruction("ADC", this.IZY, this.ADC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ADC", this.ZPX, this.ADC, 2, 4), new CpuInstruction("ROR", this.ZPX, this.ROR, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SEI", this.IMP, this.SEI, 1, 2), new CpuInstruction("ADC", this.ABY, this.ADC, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("ADC", this.ABX, this.ADC, 3, 4), new CpuInstruction("ROR", this.ABX, this.ROR, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STA", this.IZX, this.STA, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STY", this.ZP0, this.STY, 2, 3), new CpuInstruction("STA", this.ZP0, this.STA, 2, 3), new CpuInstruction("STX", this.ZP0, this.STX, 2, 3), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("DEY", this.IMP, this.DEY, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("TXA", this.IMP, this.TXA, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STY", this.ABS, this.STY, 3, 4), new CpuInstruction("STA", this.ABS, this.STA, 3, 4), new CpuInstruction("STX", this.ABS, this.STX, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BCC", this.REL, this.BCC, 2, 2), new CpuInstruction("STA", this.IZY, this.STA, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STY", this.ZPX, this.STY, 2, 4), new CpuInstruction("STA", this.ZPX, this.STA, 2, 4), new CpuInstruction("STX", this.ZPX, this.STX, 2, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("TYA", this.IMP, this.TYA, 1, 2), new CpuInstruction("STA", this.ABY, this.STA, 3, 5), new CpuInstruction("TXS", this.IMP, this.TXS, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STA", this.ABX, this.STA, 3, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("LDY", this.IMM, this.LDY, 2, 2), new CpuInstruction("LDA", this.IZX, this.LDA, 2, 6), new CpuInstruction("LDX", this.IMM, this.LDX, 2, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.ZP0, this.LDY, 2, 3), new CpuInstruction("LDA", this.ZP0, this.LDA, 2, 3), new CpuInstruction("LDX", this.ZP0, this.LDX, 2, 3), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("TAY", this.IMP, this.TAY, 1, 2), new CpuInstruction("LDA", this.IMM, this.LDA, 2, 2), new CpuInstruction("TAX", this.IMP, this.TAX, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.ABS, this.LDY, 3, 4), new CpuInstruction("LDA", this.ABS, this.LDA, 3, 4), new CpuInstruction("LDX", this.ABS, this.LDX, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BCS", this.REL, this.BCS, 2, 2), new CpuInstruction("LDA", this.IZY, this.LDA, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.ZPX, this.LDY, 2, 4), new CpuInstruction("LDA", this.ZPX, this.LDA, 2, 4), new CpuInstruction("LDX", this.ZPY, this.LDX, 2, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLV", this.IMP, this.CLV, 1, 2), new CpuInstruction("LDA", this.ABY, this.LDA, 3, 4), new CpuInstruction("TSX", this.IMP, this.TSX, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.ABX, this.LDY, 3, 4), new CpuInstruction("LDA", this.ABX, this.LDA, 3, 4), new CpuInstruction("LDX", this.ABY, this.LDX, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("CPY", this.IMM, this.CPY, 2, 2), new CpuInstruction("CMP", this.IZX, this.CMP, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPY", this.ZP0, this.CPY, 2, 3), new CpuInstruction("CMP", this.ZP0, this.CMP, 2, 3), new CpuInstruction("DEC", this.ZP0, this.DEC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("INY", this.IMP, this.INY, 1, 2), new CpuInstruction("CMP", this.IMM, this.CMP, 2, 2), new CpuInstruction("DEC", this.IMP, this.DEC, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPY", this.ABS, this.CPY, 3, 4), new CpuInstruction("CMP", this.ABS, this.CMP, 3, 4), new CpuInstruction("DEC", this.ABS, this.DEC, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BNE", this.REL, this.BNE, 2, 2), new CpuInstruction("CMP", this.IZY, this.CMP, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CMP", this.ZPX, this.CMP, 2, 4), new CpuInstruction("DEC", this.ZPX, this.DEC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLD", this.IMP, this.CLD, 1, 2), new CpuInstruction("CMP", this.ABY, this.CMP, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CMP", this.ABX, this.CMP, 3, 4), new CpuInstruction("DEC", this.ABX, this.DEC, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("CPX", this.IMM, this.CPX, 2, 2), new CpuInstruction("SBC", this.IZX, this.SBC, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPX", this.ZP0, this.CPX, 2, 3), new CpuInstruction("SBC", this.ZP0, this.SBC, 2, 3), new CpuInstruction("INC", this.ZP0, this.INC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("INX", this.IMP, this.INX, 1, 2), new CpuInstruction("SBC", this.IMM, this.SBC, 2, 2), new CpuInstruction("NOP", this.IMP, this.NOP, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPX", this.ABS, this.CPX, 3, 4), new CpuInstruction("SBC", this.ABS, this.SBC, 3, 4), new CpuInstruction("INC", this.ABS, this.INC, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
-    new CpuInstruction("BEQ", this.REL, this.BEQ, 2, 2), new CpuInstruction("SBC", this.IZY, this.SBC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SBC", this.ZPX, this.SBC, 2, 4), new CpuInstruction("INC", this.ZPX, this.INC, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SED", this.IMP, this.SED, 1, 2), new CpuInstruction("SBC", this.ABY, this.SBC, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SBC", this.ABX, this.SBC, 3, 4), new CpuInstruction("INC", this.ABX, this.INC, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BRK", this.A_IMP, this.BRK, 1, 7), new CpuInstruction("ORA", this.A_IZX, this.ORA, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ORA", this.A_ZP0, this.ORA, 2, 3), new CpuInstruction("ASL", this.A_ZP0, this.ASL, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PHP", this.A_IMP, this.PHP, 1, 3), new CpuInstruction("ORA", this.A_IMM, this.ORA, 2, 2), new CpuInstruction("ASL", this.A_ACC, this.ASL, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ORA", this.A_ABS, this.ORA, 3, 4), new CpuInstruction("ASL", this.A_ABS, this.ASL, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BPL", this.A_REL, this.BPL, 2, 2), new CpuInstruction("ORA", this.A_IZY, this.ORA, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ORA", this.A_ZPX, this.ORA, 2, 4), new CpuInstruction("ASL", this.A_ZPX, this.ASL, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLC", this.A_IMP, this.CLC, 1, 2), new CpuInstruction("ORA", this.A_ABY, this.ORA, 3, 4), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ORA", this.A_ABX, this.ORA, 3, 4), new CpuInstruction("ASL", this.A_ABX, this.ASL, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("JSR", this.A_ABS, this.JSR, 3, 6), new CpuInstruction("AND", this.A_IZX, this.AND, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("BIT", this.A_ZP0, this.BIT, 2, 3), new CpuInstruction("AND", this.A_ZP0, this.AND, 2, 3), new CpuInstruction("ROL", this.A_ZP0, this.ROL, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PLP", this.A_IMP, this.PLP, 1, 4), new CpuInstruction("AND", this.A_IMM, this.AND, 2, 2), new CpuInstruction("ROL", this.A_ACC, this.ROL, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("BIT", this.A_ABS, this.BIT, 3, 4), new CpuInstruction("AND", this.A_ABS, this.AND, 3, 4), new CpuInstruction("ROL", this.A_ABS, this.ROL, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BMI", this.A_REL, this.BMI, 2, 2), new CpuInstruction("AND", this.A_IZY, this.AND, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("AND", this.A_ZPX, this.AND, 2, 4), new CpuInstruction("ROL", this.A_ZPX, this.ROL, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SEC", this.A_IMP, this.SEC, 1, 2), new CpuInstruction("AND", this.A_ABY, this.AND, 3, 4), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("AND", this.A_ABX, this.AND, 3, 4), new CpuInstruction("ROL", this.A_ABX, this.ROL, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("RTI", this.A_IMP, this.RTI, 1, 6), new CpuInstruction("EOR", this.A_IZX, this.EOR, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("EOR", this.A_ZP0, this.EOR, 2, 3), new CpuInstruction("LSR", this.A_ZP0, this.LSR, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PHA", this.A_IMP, this.PHA, 1, 3), new CpuInstruction("EOR", this.A_IMM, this.EOR, 2, 2), new CpuInstruction("LSR", this.A_ACC, this.LSR, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("JMP", this.A_ABS, this.JMP, 3, 3), new CpuInstruction("EOR", this.A_ABS, this.EOR, 3, 4), new CpuInstruction("LSR", this.A_ABS, this.LSR, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BVC", this.A_REL, this.BVC, 2, 2), new CpuInstruction("EOR", this.A_IZY, this.EOR, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("EOR", this.A_ZPX, this.EOR, 2, 4), new CpuInstruction("LSR", this.A_ZPX, this.LSR, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLI", this.A_IMP, this.CLI, 1, 2), new CpuInstruction("EOR", this.A_ABY, this.EOR, 3, 4), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("EOR", this.A_ABX, this.EOR, 3, 4), new CpuInstruction("LSR", this.A_ABX, this.LSR, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("RTS", this.A_IMP, this.RTS, 1, 6), new CpuInstruction("ADC", this.A_IZX, this.ADC, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ADC", this.A_ZP0, this.ADC, 2, 3), new CpuInstruction("ROR", this.A_ZP0, this.ROR, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PLA", this.A_IMP, this.PLA, 1, 4), new CpuInstruction("ADC", this.A_IMM, this.ADC, 2, 2), new CpuInstruction("ROR", this.A_ACC, this.ROR, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("JMP", this.A_IND, this.JMP, 3, 5), new CpuInstruction("ADC", this.A_ABS, this.ADC, 3, 4), new CpuInstruction("ROR", this.A_ABS, this.ROR, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BVS", this.A_REL, this.BVS, 2, 2), new CpuInstruction("ADC", this.A_IZY, this.ADC, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ADC", this.A_ZPX, this.ADC, 2, 4), new CpuInstruction("ROR", this.A_ZPX, this.ROR, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SEI", this.A_IMP, this.SEI, 1, 2), new CpuInstruction("ADC", this.A_ABY, this.ADC, 3, 4), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ADC", this.A_ABX, this.ADC, 3, 4), new CpuInstruction("ROR", this.A_ABX, this.ROR, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("STA", this.A_IZX, this.STA, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STY", this.A_ZP0, this.STY, 2, 3), new CpuInstruction("STA", this.A_ZP0, this.STA, 2, 3), new CpuInstruction("STX", this.A_ZP0, this.STX, 2, 3), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("DEY", this.A_IMP, this.DEY, 1, 2), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("TXA", this.A_IMP, this.TXA, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STY", this.A_ABS, this.STY, 3, 4), new CpuInstruction("STA", this.A_ABS, this.STA, 3, 4), new CpuInstruction("STX", this.A_ABS, this.STX, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BCC", this.A_REL, this.BCC, 2, 2), new CpuInstruction("STA", this.A_IZY, this.STA, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("STY", this.A_ZPX, this.STY, 2, 4), new CpuInstruction("STA", this.A_ZPX, this.STA, 2, 4), new CpuInstruction("STX", this.A_ZPX, this.STX, 2, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("TYA", this.A_IMP, this.TYA, 1, 2), new CpuInstruction("STA", this.A_ABY, this.STA, 3, 5), new CpuInstruction("TXS", this.A_IMP, this.TXS, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("STA", this.A_ABX, this.STA, 3, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("LDY", this.A_IMM, this.LDY, 2, 2), new CpuInstruction("LDA", this.A_IZX, this.LDA, 2, 6), new CpuInstruction("LDX", this.A_IMM, this.LDX, 2, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.A_ZP0, this.LDY, 2, 3), new CpuInstruction("LDA", this.A_ZP0, this.LDA, 2, 3), new CpuInstruction("LDX", this.A_ZP0, this.LDX, 2, 3), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("TAY", this.A_IMP, this.TAY, 1, 2), new CpuInstruction("LDA", this.A_IMM, this.LDA, 2, 2), new CpuInstruction("TAX", this.A_IMP, this.TAX, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.A_ABS, this.LDY, 3, 4), new CpuInstruction("LDA", this.A_ABS, this.LDA, 3, 4), new CpuInstruction("LDX", this.A_ABS, this.LDX, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BCS", this.A_REL, this.BCS, 2, 2), new CpuInstruction("LDA", this.A_IZY, this.LDA, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.A_ZPX, this.LDY, 2, 4), new CpuInstruction("LDA", this.A_ZPX, this.LDA, 2, 4), new CpuInstruction("LDX", this.A_ZPY, this.LDX, 2, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLV", this.A_IMP, this.CLV, 1, 2), new CpuInstruction("LDA", this.A_ABY, this.LDA, 3, 4), new CpuInstruction("TSX", this.A_IMP, this.TSX, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("LDY", this.A_ABX, this.LDY, 3, 4), new CpuInstruction("LDA", this.A_ABX, this.LDA, 3, 4), new CpuInstruction("LDX", this.A_ABY, this.LDX, 3, 4), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("CPY", this.A_IMM, this.CPY, 2, 2), new CpuInstruction("CMP", this.A_IZX, this.CMP, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPY", this.A_ZP0, this.CPY, 2, 3), new CpuInstruction("CMP", this.A_ZP0, this.CMP, 2, 3), new CpuInstruction("DEC", this.A_ZP0, this.DEC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("INY", this.A_IMP, this.INY, 1, 2), new CpuInstruction("CMP", this.A_IMM, this.CMP, 2, 2), new CpuInstruction("DEC", this.A_IMP, this.DEC, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPY", this.A_ABS, this.CPY, 3, 4), new CpuInstruction("CMP", this.A_ABS, this.CMP, 3, 4), new CpuInstruction("DEC", this.A_ABS, this.DEC, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BNE", this.A_REL, this.BNE, 2, 2), new CpuInstruction("CMP", this.A_IZY, this.CMP, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("CMP", this.A_ZPX, this.CMP, 2, 4), new CpuInstruction("DEC", this.A_ZPX, this.DEC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CLD", this.A_IMP, this.CLD, 1, 2), new CpuInstruction("CMP", this.A_ABY, this.CMP, 3, 4), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("CMP", this.A_ABX, this.CMP, 3, 4), new CpuInstruction("DEC", this.A_ABX, this.DEC, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("CPX", this.A_IMM, this.CPX, 2, 2), new CpuInstruction("SBC", this.A_IZX, this.SBC, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPX", this.A_ZP0, this.CPX, 2, 3), new CpuInstruction("SBC", this.A_ZP0, this.SBC, 2, 3), new CpuInstruction("INC", this.A_ZP0, this.INC, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("INX", this.A_IMP, this.INX, 1, 2), new CpuInstruction("SBC", this.A_IMM, this.SBC, 2, 2), new CpuInstruction("NOP", this.A_IMP, this.NOP, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("CPX", this.A_ABS, this.CPX, 3, 4), new CpuInstruction("SBC", this.A_ABS, this.SBC, 3, 4), new CpuInstruction("INC", this.A_ABS, this.INC, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
+    new CpuInstruction("BEQ", this.A_REL, this.BEQ, 2, 2), new CpuInstruction("SBC", this.A_IZY, this.SBC, 2, 5), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("SBC", this.A_ZPX, this.SBC, 2, 4), new CpuInstruction("INC", this.A_ZPX, this.INC, 2, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("SED", this.A_IMP, this.SED, 1, 2), new CpuInstruction("SBC", this.A_ABY, this.SBC, 3, 4), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("SBC", this.A_ABX, this.SBC, 3, 4), new CpuInstruction("INC", this.A_ABX, this.INC, 3, 7), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
             });
 
             bus = new Bus(memory);
@@ -261,12 +261,12 @@ namespace Lib6502
         /// <summary>
         /// Program counter, the current memory position of the next byte read
         /// </summary>
-        public ushort PC { get; protected set; }
+        public ushort PC { get; internal set; }
 
         /// <summary>
         /// The current stack pointer
         /// </summary>
-        public byte SP { get; protected set; }
+        public byte SP { get; internal set; }
 
         /// <summary>
         /// The A register, or accumulator
@@ -292,7 +292,7 @@ namespace Lib6502
         /// <summary>
         /// CPU flags represented as an enumeration
         /// </summary>
-        public CpuFlags Flags { get; protected set; }
+        public CpuFlags Flags { get; internal set; }
 
 
         public ReadOnlyCollection<CpuInstruction> Instructions { get; protected set; }
@@ -303,7 +303,7 @@ namespace Lib6502
         /// Absolute addressing mode using the next two bytes after the opcode. 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ABS()
+        public byte A_ABS()
         {
             var lo = Read(PC);
             PC++;
@@ -321,7 +321,7 @@ namespace Lib6502
         /// Absolute memory address using the value in the X register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ABX()
+        public byte A_ABX()
         {
             var lo = Read(PC);
             PC++;
@@ -339,7 +339,7 @@ namespace Lib6502
         /// Absolute memory address using the value in the Y register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ABY()
+        public byte A_ABY()
         {
             var lo = Read(PC);
             PC++;
@@ -357,7 +357,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ACC()
+        public byte A_ACC()
         {
             fetched = A;
             return 0;
@@ -367,7 +367,7 @@ namespace Lib6502
         /// Immediate addressing mode
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte IMM()
+        public byte A_IMM()
         {
             addr_abs = PC;
             addr_rel = 0;
@@ -381,7 +381,7 @@ namespace Lib6502
         /// Implied addressing mode
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte IMP()
+        public byte A_IMP()
         {
             fetched = A;
             
@@ -392,8 +392,20 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte IND()
-        { 
+        public byte A_IND()
+        {
+            byte pointerLo = Read(PC++);
+            byte pointerHi = Read(PC++);
+
+            ushort pointerAddr = (ushort)((pointerHi << 8) + pointerLo);
+
+            byte lo = Read(pointerAddr);
+            byte hi = Read((ushort)(pointerAddr + 1));
+
+            addr_abs = (ushort)((hi << 8) + lo);
+
+            fetched = Read(addr_abs);
+
             return 0; 
         }
 
@@ -403,9 +415,10 @@ namespace Lib6502
         /// <remarks>Uses the zero page as a table of offsets, with the address specified
         /// as the starting address with the X register containing the offset within the table</remarks>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte IZX()
+        public byte A_IZX()
         {
             byte b = Read(PC);
+
             byte pointerLo = (byte)(b + X);
             byte pointerHi = (byte)(b + X + 1);
 
@@ -427,20 +440,17 @@ namespace Lib6502
         /// <remarks>Uses the zero page as a table of offsets, with the address specified
         /// as the starting address with the Y register containing the offset within the table</remarks>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte IZY()
+        public byte A_IZY()
         {
-            byte b = Read(PC);
-            byte pointerLo = (byte)(b + Y);
-            byte pointerHi = (byte)(b + Y + 1);
+            byte pointerLo = Read(PC);
+            byte pointerHi = Read((ushort)(PC + 1));
 
-            byte lo = Read((ushort)pointerLo);
-            byte hi = Read((ushort)pointerHi);
-
-            addr_abs = (ushort)((hi << 8) + lo);
+            addr_abs = (ushort)((pointerHi << 8) + (pointerLo + Y));
 
             fetched = Read(addr_abs);
 
             PC++;
+
             // TODO : figure out if the addr_abs is not on the same page. This would 
             // mean we need additional CPU cycles.
             return 0;
@@ -450,13 +460,20 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte REL()
+        public byte A_REL()
         {
-            addr_abs = Read(PC);
+            sbyte lo = (sbyte)(Read(PC));
+            
+            if ((lo & 0x80) == 0x80)
+                addr_abs = (ushort)(PC - lo);
+            else
+                addr_abs = (ushort)(PC + lo);
+
             PC++;
+
             // if the address high order bit is set, then this is a negative offset
-            if ((addr_abs & 0x80) == 0x80)
-                addr_abs |= 0xFF00;
+            //if ((addr_abs & 0x80) == 0x80)
+            //    addr_abs |= 0xFF00;
 
             return 0; 
         }
@@ -465,7 +482,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ZP0()
+        public byte A_ZP0()
         {
             addr_abs = Read(PC);
             PC++;
@@ -480,7 +497,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ZPX()
+        public byte A_ZPX()
         {
             addr_abs = (ushort)(Read(PC) + X);
             PC++;
@@ -495,7 +512,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ZPY()
+        public byte A_ZPY()
         {
             addr_abs = (ushort)(Read(PC) + Y);
             PC++;
@@ -693,10 +710,27 @@ namespace Lib6502
         } 
         
         /// <summary>
-        /// 
+        /// Performs a CoMPare operation with the Accumulator as if a subtraction operation took place
         /// </summary>
         /// <returns></returns>
-        public byte CMP(){ return 0;} 
+        public byte CMP()
+        {
+            short t = (short)(A - fetched);
+
+            if (t > 0)
+                C = true;
+            
+            if (t == 0)
+            {
+                C = true;
+                Z = true;
+            }
+
+            if (t < 0)
+                N = true;
+
+            return 0;
+        } 
         
         /// <summary>
         /// 
@@ -1016,8 +1050,8 @@ namespace Lib6502
         protected CpuStatus status; // cpu status flags
         // protected byte cycles;    // the number of remaining cpu cycles
         protected byte opcode;      // the current opcode being executed
-        protected byte fetched;     // the byte recently fetched() 
-        protected ushort addr_abs;  // absolute address reference
+        internal byte fetched;     // the byte recently fetched() 
+        internal ushort addr_abs;  // absolute address reference
         protected ushort addr_rel;  // relative address reference
         protected Bus bus;
 

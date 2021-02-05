@@ -5,11 +5,11 @@ using Lib6502;
 
 namespace Lib6502XUnit.Tests
 {
-    public class m6502SEDTests
+    public class m6502BITTests
     {
         [Theory]
         [MemberData(nameof(Data))]
-        public void SetDecimal(string[] instructions, byte a, byte x, byte y, CpuFlags initialFlags, byte expectedValue, byte expectedCycles, CpuFlags expectedFlags, Action<Memory> memoryCallback)
+        public void Bits(string[] instructions, byte a, byte x, byte y, CpuFlags initialFlags, byte expectedValue, byte expectedCycles, CpuFlags expectedFlags, Action<Memory> memoryCallback)
         {
             var mem = new Memory(1024 * 32);
 
@@ -38,9 +38,9 @@ namespace Lib6502XUnit.Tests
         public static IEnumerable<object[]> Data =>
             new List<object[]>
             {
-//                new object[] { new string[] { "SED #$44" }, 0x01, CpuFlags.Empty, 0x45, CpuFlags.Empty, (Action<Memory>) ((m) => { m.Write(0x0000, 0x01); } ) },
-                new object[] { new string[] { "SED         " }, 0x00, 0x00, 0x00, CpuFlags.Empty, 0x00, 2, CpuFlags.D, null},
-                new object[] { new string[] { "SED         " }, 0x00, 0x00, 0x00, CpuFlags.D    , 0x00, 2, CpuFlags.D, null},
+//                new object[] { new string[] { "BIT #$44" }, 0x01, CpuFlags.Empty, 0x45, CpuFlags.Empty, (Action<Memory>) ((m) => { m.Write(0x0000, 0x01); } ) },
+                new object[] { new string[] { "BIT $44     " }, 0x00, 0x00, 0x00, CpuFlags.Empty, 0x00, 3, CpuFlags.Empty, (Action<Memory>) ((m) => { m.Write(0x0000, 0x01); } ) },
+                new object[] { new string[] { "BIT $4400   " }, 0x00, 0x00, 0x00, CpuFlags.Empty, 0x00, 4, CpuFlags.Empty, (Action<Memory>) ((m) => { m.Write(0x0000, 0x01); } ) },
             };
     }
 }
