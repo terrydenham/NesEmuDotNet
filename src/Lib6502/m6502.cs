@@ -15,14 +15,14 @@ namespace Lib6502
     public enum CpuFlags
     {
         Empty = 0,
-        C = 1,
-        Z = 2,
-        I = 4,
-        D = 8,
-        U = 16,
-        B = 32,
-        V = 64,
-        N = 128
+        C = (1 << 0),
+        Z = (1 << 1),
+        I = (1 << 2),
+        D = (1 << 3),
+        B = (1 << 4),
+        U = (1 << 5),
+        V = (1 << 6),
+        N = (1 << 7)
     }
 
     [StructLayout(LayoutKind.Explicit, Size = 1, CharSet = CharSet.Ansi)]
@@ -438,12 +438,19 @@ namespace Lib6502
         /// Indirect Zero Page with Y offset
         /// </summary>
         /// <remarks>Uses the zero page as a table of offsets, with the address specified
-        /// as the starting address with the Y register containing the offset within the table</remarks>
+        /// as the starting 16-bit address with the Y register containing the offset</remarks>
+        /// <example>ADC ($86),Y
+        /// The processor reads the $86 address as a location within Zero Page, and reads the
+        /// following byte to arrive at a 16bit address. This is added with the Y register
+        /// to arrive at the final address
+        /// </example>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte A_IZY()
         {
-            byte pointerLo = Read(PC);
-            byte pointerHi = Read((ushort)(PC + 1));
+            byte baseAddr = Read(PC);
+
+            byte pointerLo = Read(baseAddr);
+            byte pointerHi = Read((ushort)(baseAddr + 1));
 
             addr_abs = (ushort)((pointerHi << 8) + (pointerLo + Y));
 
@@ -543,18 +550,19 @@ namespace Lib6502
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte ADC()
         {
-            Int16 newValue = A;
+            Int32 newValue = A;
             newValue += fetched;
+            newValue += (C ? 1 : 0);
 
-            if (newValue == 0)
+            if ((byte)newValue == 0x00)
                 Z = true;
 
             if (newValue < 0)
                 N = true;
 
-            if (newValue > 0xFF)
+            if ((newValue & 0x80) == 0x80)
             {
-                V = true;
+                // V = true;
                 C = true;
             }
 
@@ -570,7 +578,7 @@ namespace Lib6502
         public byte AND()
         {
             A = (byte)(A & fetched);
-            Z = A == 0x00;
+            Z = (A == 0x00);
             N = (bool)((byte)(A & 0x80) == 0x80);
             
             // AND has the possible outcoming of needing extra cpu cycles based on the address mode
@@ -597,49 +605,155 @@ namespace Lib6502
         } 
         
         /// <summary>
-        /// 
+        /// (B)ranch if (C)arry flag (C)lear
         /// </summary>
         /// <returns></returns>
-        public byte BCC(){ return 0;}
+        public byte BCC()
+        { 
+            if(!C)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perfomr the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+
+            return 0;
+        }
         
         /// <summary>
-        /// 
+        /// (B)ranch if (C)arry flag (S)et
         /// </summary>
         /// <returns></returns>
-        public byte BCS(){ return 0;} 
+        public byte BCS()
+        {
+            if(C)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        } 
         
         /// <summary>
-        /// 
+        /// (B)ranch on (EQ)ual
         /// </summary>
         /// <returns></returns>
-        public byte BEQ(){ return 0;} 
+        public byte BEQ()
+        {
+            if(Z)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        } 
         
         /// <summary>
-        /// 
+        /// Performs as if the value at the fetched address were ANDed with the Accumulator
         /// </summary>
         /// <returns></returns>
-        public byte BIT(){ return 0;} 
+        public byte BIT()
+        {
+            Z = (fetched & A) == 0x00;
+
+            N = ((fetched & 0x80) == 0x80);
+
+            V = ((fetched & 0x40) == 0x40);
+
+            return 0;
+        } 
         
         /// <summary>
-        /// 
+        /// (B)ranch if (MI)nus
         /// </summary>
         /// <returns></returns>
-        public byte BMI(){ return 0;}
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public byte BNE(){ return 0;} 
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public byte BPL(){ return 0;}
+        public byte BMI()
+        {
+            if (N)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        }
 
         /// <summary>
-        /// Performs a BReaK
+        /// (B)ranch if (N)ot (E)qual
+        /// </summary>
+        /// <returns></returns>
+        public byte BNE()
+        {
+            if (!Z)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// (B)ranch on (PL)us
+        /// </summary>
+        /// <returns></returns>
+        public byte BPL()
+        {
+            if(!N)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Performs a (BR)ea(K)
         /// </summary>
         /// <returns></returns>
         public byte BRK() 
@@ -650,21 +764,52 @@ namespace Lib6502
             return 0; 
         } 
 
-        
         /// <summary>
-        /// 
+        /// (B)ranch if O(v)erflow (C)lear
         /// </summary>
         /// <returns></returns>
-        public byte BVC(){ return 0;}
-        
+        public byte BVC()
+        {
+            if (!V)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        }
+
         /// <summary>
-        /// 
+        /// (B)ranch if O(v)erflow (S)et
         /// </summary>
         /// <returns></returns>
-        public byte BVS(){ return 0;}
-        
+        public byte BVS()
+        {
+            if (V)
+            {
+                Cycles++;
+                addr_abs = (ushort)(PC + addr_rel);
+
+                // if the new address and the current program counter
+                // are not within the same page (255 bytes), then
+                // the CPU needs an extra clock cycle to perform the operation
+                if ((addr_abs & 0xFF00) != (PC & 0xFF00))
+                    Cycles++;
+
+                PC = addr_abs;
+            }
+            return 0;
+        }
+
         /// <summary>
-        /// Clear the Carry CPU flag
+        /// (CL)ear the (C)arry CPU flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte CLC()
@@ -676,7 +821,7 @@ namespace Lib6502
         } 
 
         /// <summary>
-        /// Clear the Decimal CPU flag
+        /// (CL)ear the (D)ecimal CPU flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte CLD()
@@ -688,7 +833,7 @@ namespace Lib6502
         }
         
         /// <summary>
-        /// Clear the Interrupt flag
+        /// (CL)ear the (I)nterrupt flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte CLI()
@@ -699,7 +844,7 @@ namespace Lib6502
         }
 
         /// <summary>
-        /// Clear the Overflow CPU flag
+        /// (CL)ear the O(V)erflow CPU flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte CLV()
@@ -736,19 +881,36 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte CPX(){ return 0;} 
+        public byte CPX()
+        { 
+            return 0;
+        } 
         
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte CPY(){ return 0;}
+        public byte CPY()
+        { 
+            return 0;
+        }
 
         /// <summary>
         /// Decrement by one the given memory address, based on the addressing mode
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte DEC(){ return 0;}
+        public byte DEC()
+        {
+            sbyte t = (sbyte)(fetched - 1);
+
+            bus.Write(addr_abs, (byte)t);
+
+            Z = t == 0;
+
+            N = (t & 0x8) == 0x8;
+
+            return 0;
+        }
 
         /// <summary>
         /// Decrement by one the value in the X register
@@ -756,6 +918,12 @@ namespace Lib6502
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte DEX()
         {
+            X--;
+
+            Z = X == 0;
+
+            N = (X & 0x8) == 0x8;
+
             return 0;
         }
 
@@ -763,7 +931,16 @@ namespace Lib6502
         /// Decrement by one the value in the Y register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte DEY(){ return 0;} 
+        public byte DEY()
+        {
+            Y--;
+
+            Z = Y == 0;
+
+            N = (Y & 0x8) == 0x8;
+
+            return 0;
+        }
 
         /// <summary>
         /// 
@@ -775,25 +952,49 @@ namespace Lib6502
         /// Increment the value in the A register
         /// </summary>
         /// <returns></returns>
-        public byte INC(){ return 0;}
+        public byte INC()
+        {
+            sbyte t = (sbyte)(fetched + 1);
+
+            bus.Write(addr_abs, (byte)t);
+
+            Z = t == 0;
+
+            N = (t & 0x8) == 0x8;
+
+            return 0;
+        }
 
         /// <summary>
-        /// Increment by one the value stored in the X register
-        /// </summary>
+        /// (IN)crement the X register by one (1)
+        /// /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte INX()
         {
             X++;
 
+            Z = X == 0;
+
+            N = (X & 0x8) == 0x8;
+
             return 0;
-        } 
-        
+        }
+
         /// <summary>
-        /// 
+        /// (IN)crement the Y register by one (1)
         /// </summary>
         /// <returns></returns>
-        public byte INY(){ return 0;} 
-        
+        public byte INY()
+        {
+            Y--;
+
+            Z = Y == 0;
+
+            N = (Y & 0x8) == 0x8;
+
+            return 0;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -1052,7 +1253,7 @@ namespace Lib6502
         protected byte opcode;      // the current opcode being executed
         internal byte fetched;     // the byte recently fetched() 
         internal ushort addr_abs;  // absolute address reference
-        protected ushort addr_rel;  // relative address reference
+        internal ushort addr_rel;  // relative address reference
         protected Bus bus;
 
 //        protected ReadOnlyCollection<CpuInstruction> instructions;

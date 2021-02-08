@@ -34,7 +34,7 @@ namespace Lib6502.Tests
             memory.Clear();
         }
 
-        protected static void AssertFlags(m6502 sut, bool c, bool z, bool n = false, bool v = false, bool d = false, bool b = false, bool i = false)
+        internal static void AssertFlags(m6502 sut, bool c, bool z, bool n = false, bool v = false, bool d = false, bool b = false, bool i = false)
         {
             Assert.AreEqual(b, sut.B, "Break flag was not correct");
             Assert.AreEqual(c, sut.C, "Carry flag was not correct");
@@ -47,7 +47,7 @@ namespace Lib6502.Tests
 
         }
 
-        protected static void AssertFlags2(m6502 sut, CpuFlags expectedFlags)
+        internal static void AssertFlags2(m6502 sut, CpuFlags expectedFlags)
         {
             Assert.AreEqual((expectedFlags & CpuFlags.B) == CpuFlags.B, sut.B, "Break flag was not correct");
             Assert.AreEqual((expectedFlags & CpuFlags.C) == CpuFlags.C, sut.C, "Carry flag was not correct");

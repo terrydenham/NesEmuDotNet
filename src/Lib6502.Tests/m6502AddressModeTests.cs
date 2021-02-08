@@ -182,6 +182,23 @@ namespace Lib6502.Tests
         }
 
         [Test]
+        public void Implied_CanReadValue()
+        {
+            byte expected = 0x23;
+
+            // reset the cpu state
+            sut.SetInitialState(CpuFlags.Empty);
+
+            // implied function reads from the (A)ccumulator
+            sut.A = expected;
+
+            // perform the implied operation
+            sut.A_IMP();
+
+            Assert.AreEqual(expected, sut.fetched);
+        }
+
+        [Test, Ignore("not ready yet")]
         public void RelativeWithNegativeOffset_CanReadValue()
         {
             // set the starting program counter
@@ -217,6 +234,84 @@ namespace Lib6502.Tests
 
             // verify the value at the absolute address was fetched into the fetched "register"
             Assert.AreEqual(0x1020, sut.addr_abs);
+        }
+
+        [Test]
+        public void ZeroPage_CanReadValue()
+        {
+            byte expected = 0x23;
+
+            // set the starting program counter
+            sut.PC = 0xFFF;
+
+            // write the expected value in the zero page address
+            mem.Write(0x0044, expected);
+
+            // write the instruction into the program counter address
+            mem.Write(sut.PC, Assembler.Assemble("STA $44"));
+
+            // increment the program counter because we're not interested in the operation
+            sut.PC++;
+
+            // perform the zero page address operation
+            sut.A_ZP0();
+
+            // verify the value fetched is what we expected
+            Assert.AreEqual(expected, sut.fetched);
+        }
+
+        [Test]
+        public void ZeroPageWithOffsetX_CanReadValue()
+        {
+            byte expected = 0x23;
+
+            // write the expected value at the zero page with x offset
+            mem.Write(0x96, expected);
+
+            // set the starting program counter;
+            sut.PC = 0xFFF;
+
+            // write the instruction into the program counter address
+            mem.Write(sut.PC, Assembler.Assemble("LDA $86,X"));
+
+            // increment the program counter because we're no interested in the operation
+            sut.PC++;
+
+            // set the offset value in the X register
+            sut.X = 0x10;
+
+            // perform the zero page with x offset address operation
+            sut.A_ZPX();
+
+            // verify the value fetched is what we expected
+            Assert.AreEqual(expected, sut.fetched);
+        }
+
+        [Test]
+        public void ZeroPageWithOffsetY_CanReadValue()
+        {
+            byte expected = 0x23;
+
+            // write the expected value at the zero page with x offset
+            mem.Write(0x96, expected);
+
+            // set the starting program counter;
+            sut.PC = 0xFFF;
+
+            // write the instruction into the program counter address
+            mem.Write(sut.PC, Assembler.Assemble("LDA $86,Y"));
+
+            // increment the program counter because we're no interested in the operation
+            sut.PC++;
+
+            // set the offset value in the X register
+            sut.Y = 0x10;
+
+            // perform the zero page with x offset address operation
+            sut.A_ZPY();
+
+            // verify the value fetched is what we expected
+            Assert.AreEqual(expected, sut.fetched);
         }
     }
 }

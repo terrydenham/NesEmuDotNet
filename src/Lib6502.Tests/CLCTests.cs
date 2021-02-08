@@ -1,10 +1,8 @@
-using NUnit.Framework;
-using System.IO;
-using System.Text;
+﻿using NUnit.Framework;
 
 namespace Lib6502.Tests
 {
-    public class m6502A_ABSTests
+    public class CLCTests
     {
         protected Memory mem;
         protected m6502 sut;
@@ -24,13 +22,23 @@ namespace Lib6502.Tests
         }
 
         [Test]
-        public void CanReadValueAtAbsoluteAddress()
+        public void CLC_WhenSet_ClearsFlag()
         {
-            mem.Write(0x4400, 0x44);
+            sut.SEC();
 
-            sut.A_ABS();
+            sut.CLC();
 
-            Assert.AreEqual(0x44, sut.fetched);
+            Assert.False(sut.C);
         }
-   }
+
+        [Test]
+        public void CLC_WhenNotSet_ClearsFlag()
+        {
+            sut.SetInitialState(CpuFlags.Empty);
+
+            sut.CLC();
+
+            Assert.False(sut.C);
+        }
+    }
 }
