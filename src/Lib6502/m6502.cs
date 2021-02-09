@@ -911,12 +911,12 @@ namespace Lib6502
         /// Absolute addressing mode using the next two bytes after the opcode. 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ABS()
+        internal virtual byte A_ABS()
         {
             return this.A_ABS(false);
         }
 
-        public byte A_ABS(bool postOperation)
+        internal virtual byte A_ABS(bool postOperation)
         {
             if(postOperation)
             {
@@ -941,7 +941,7 @@ namespace Lib6502
         /// Absolute memory address using the value in the X register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ABX()
+        internal virtual byte A_ABX()
         {
             var lo = Read(PC);
             PC++;
@@ -959,7 +959,7 @@ namespace Lib6502
         /// Absolute memory address using the value in the Y register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ABY()
+        internal virtual byte A_ABY()
         {
             var lo = Read(PC);
             PC++;
@@ -977,7 +977,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ACC()
+        internal virtual byte A_ACC()
         {
             fetched = A;
             return 0;
@@ -987,7 +987,7 @@ namespace Lib6502
         /// Immediate addressing mode
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_IMM()
+        internal virtual byte A_IMM()
         {
             addr_abs = PC;
             addr_rel = 0;
@@ -1001,7 +1001,7 @@ namespace Lib6502
         /// Implied addressing mode
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_IMP()
+        internal virtual byte A_IMP()
         {
             fetched = A;
             
@@ -1012,7 +1012,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_IND()
+        internal virtual byte A_IND()
         {
             byte pointerLo = Read(PC++);
             byte pointerHi = Read(PC++);
@@ -1035,7 +1035,7 @@ namespace Lib6502
         /// <remarks>Uses the zero page as a table of offsets, with the address specified
         /// as the starting address with the X register containing the offset within the table</remarks>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_IZX()
+        internal virtual byte A_IZX()
         {
             byte b = Read(PC);
 
@@ -1065,7 +1065,7 @@ namespace Lib6502
         /// to arrive at the final address
         /// </example>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_IZY()
+        internal virtual byte A_IZY()
         {
             byte baseAddr = Read(PC);
 
@@ -1087,7 +1087,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_REL()
+        internal virtual byte A_REL()
         {
             sbyte lo = (sbyte)(Read(PC));
             
@@ -1109,7 +1109,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ZP0()
+        internal virtual byte A_ZP0()
         {
             addr_abs = Read(PC);
             PC++;
@@ -1124,7 +1124,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ZPX()
+        internal virtual byte A_ZPX()
         {
             addr_abs = (ushort)(Read(PC) + X);
             PC++;
@@ -1139,7 +1139,7 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte A_ZPY()
+        internal virtual byte A_ZPY()
         {
             addr_abs = (ushort)(Read(PC) + Y);
             PC++;
@@ -1158,7 +1158,7 @@ namespace Lib6502
         /// instruction for both addressing mode function pointer and the operation function pointer
         /// to this function.</remarks>
         /// <returns>Zero</returns>
-        public byte XXX() { return 0; }
+        internal byte XXX() { return 0; }
 
         #endregion
 
@@ -1168,7 +1168,7 @@ namespace Lib6502
         /// Add the next byte with the accumulator
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte ADC()
+        intenral virtual byte ADC()
         {
             Int32 newValue = A;
             newValue += fetched;
@@ -1195,7 +1195,7 @@ namespace Lib6502
         /// Performs a bitwise AND operation with the accumulator
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte AND()
+        internal virtual byte AND()
         {
             A = (byte)(A & fetched);
             Z = (A == 0x00);
@@ -1210,7 +1210,7 @@ namespace Lib6502
         /// Carry bit.
         /// </summary>
         /// <returns></returns>
-        public byte ASL()
+        internal virtual byte ASL()
         {
             C = (fetched & 0x80) == 0x80;
             
@@ -1226,7 +1226,7 @@ namespace Lib6502
         /// (B)ranch if (C)arry flag (C)lear
         /// </summary>
         /// <returns></returns>
-        public byte BCC()
+        internal virtual byte BCC()
         { 
             if(!C)
             {
@@ -1249,7 +1249,7 @@ namespace Lib6502
         /// (B)ranch if (C)arry flag (S)et
         /// </summary>
         /// <returns></returns>
-        public byte BCS()
+        internal virtual byte BCS()
         {
             if(C)
             {
@@ -1271,7 +1271,7 @@ namespace Lib6502
         /// (B)ranch on (EQ)ual
         /// </summary>
         /// <returns></returns>
-        public byte BEQ()
+        internal virtual byte BEQ()
         {
             if(Z)
             {
@@ -1293,7 +1293,7 @@ namespace Lib6502
         /// Performs as if the value at the fetched address were ANDed with the Accumulator
         /// </summary>
         /// <returns></returns>
-        public byte BIT()
+        internal virtual byte BIT()
         {
             Z = (fetched & A) == 0x00;
 
@@ -1308,7 +1308,7 @@ namespace Lib6502
         /// (B)ranch if (MI)nus
         /// </summary>
         /// <returns></returns>
-        public byte BMI()
+        internal virtual byte BMI()
         {
             if (N)
             {
@@ -1330,7 +1330,7 @@ namespace Lib6502
         /// (B)ranch if (N)ot (E)qual
         /// </summary>
         /// <returns></returns>
-        public byte BNE()
+        internal virtual byte BNE()
         {
             if (!Z)
             {
@@ -1352,7 +1352,7 @@ namespace Lib6502
         /// (B)ranch on (PL)us
         /// </summary>
         /// <returns></returns>
-        public byte BPL()
+        internal virtual byte BPL()
         {
             if(!N)
             {
@@ -1374,19 +1374,19 @@ namespace Lib6502
         /// Performs a (BR)ea(K)
         /// </summary>
         /// <returns></returns>
-        public byte BRK() 
+        internal virtual byte BRK() 
         {
             PC++;
             B = true;
 
             return 0; 
-        } 
+        }
 
         /// <summary>
         /// (B)ranch if O(v)erflow (C)lear
         /// </summary>
         /// <returns></returns>
-        public byte BVC()
+        internal virtual byte BVC()
         {
             if (!V)
             {
@@ -1408,7 +1408,7 @@ namespace Lib6502
         /// (B)ranch if O(v)erflow (S)et
         /// </summary>
         /// <returns></returns>
-        public byte BVS()
+        internal virtual byte BVS()
         {
             if (V)
             {
@@ -1430,31 +1430,31 @@ namespace Lib6502
         /// (CL)ear the (C)arry CPU flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte CLC()
+        internal virtual byte CLC()
         {
             C = false;
 
             // this operation requires no additional CPU cycles
             return 0;
-        } 
+        }
 
         /// <summary>
         /// (CL)ear the (D)ecimal CPU flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte CLD()
+        internal virtual byte CLD()
         {
             D = false;
 
             // this operation requires no additional CPU cycles
             return 0;
         }
-        
+
         /// <summary>
         /// (CL)ear the (I)nterrupt flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte CLI()
+        internal virtual byte CLI()
         {
             I = false;
 
@@ -1465,18 +1465,18 @@ namespace Lib6502
         /// (CL)ear the O(V)erflow CPU flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte CLV()
+        internal virtual byte CLV()
         {
             V = false;
 
             return 0;
-        } 
-        
+        }
+
         /// <summary>
         /// Performs a CoMPare operation with the Accumulator as if a subtraction operation took place
         /// </summary>
         /// <returns></returns>
-        public byte CMP()
+        internal virtual byte CMP()
         {
             short t = (short)(A - fetched);
 
@@ -1493,22 +1493,22 @@ namespace Lib6502
                 N = true;
 
             return 0;
-        } 
-        
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte CPX()
+        internal virtual byte CPX()
         { 
             return 0;
-        } 
-        
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte CPY()
+        internal virtual byte CPY()
         { 
             return 0;
         }
@@ -1517,7 +1517,7 @@ namespace Lib6502
         /// Decrement by one the given memory address, based on the addressing mode
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte DEC()
+        internal virtual byte DEC()
         {
             sbyte t = (sbyte)(fetched - 1);
 
@@ -1534,7 +1534,7 @@ namespace Lib6502
         /// Decrement by one the value in the X register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte DEX()
+        internal virtual byte DEX()
         {
             X--;
 
@@ -1549,7 +1549,7 @@ namespace Lib6502
         /// Decrement by one the value in the Y register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte DEY()
+        internal virtual byte DEY()
         {
             Y--;
 
@@ -1564,13 +1564,13 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte EOR(){ return 0;}
+        internal virtual byte EOR(){ return 0;}
 
         /// <summary>
         /// Increment the value in the A register
         /// </summary>
         /// <returns></returns>
-        public byte INC()
+        internal virtual byte INC()
         {
             sbyte t = (sbyte)(fetched + 1);
 
@@ -1587,7 +1587,7 @@ namespace Lib6502
         /// (IN)crement the X register by one (1)
         /// /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte INX()
+        internal virtual byte INX()
         {
             X++;
 
@@ -1602,7 +1602,7 @@ namespace Lib6502
         /// (IN)crement the Y register by one (1)
         /// </summary>
         /// <returns></returns>
-        public byte INY()
+        internal virtual byte INY()
         {
             Y--;
 
@@ -1617,103 +1617,103 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte JMP(){ return 0;}
-        
+        internal virtual byte JMP(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte JSR(){ return 0;} 
-        
+        internal virtual byte JSR(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte LDA(){ return 0;} 
-        
+        internal virtual byte LDA(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte LDX(){ return 0;} 
-        
+        internal virtual byte LDX(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte LDY(){ return 0;}
-        
+        internal virtual byte LDY(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte LSR(){ return 0;}
-        
+        internal virtual byte LSR(){ return 0;}
+
         /// <summary>
         /// Perform a no-op, or non-operation
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte NOP(){ return 0;} 
-        
+        internal virtual byte NOP(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte ORA(){ return 0;} 
-        
+        internal virtual byte ORA(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte PHA(){ return 0;}
-        
+        internal virtual byte PHA(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte PHP(){ return 0;} 
-        
+        internal virtual byte PHP(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte PLA(){ return 0;} 
-        
+        internal virtual byte PLA(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte PLP(){ return 0;} 
-        
+        internal virtual byte PLP(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte ROL(){ return 0;}
-        
+        internal virtual byte ROL(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte ROR(){ return 0;} 
-        
+        internal virtual byte ROR(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte RTI(){ return 0;} 
-        
+        internal virtual byte RTI(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte RTS(){ return 0;} 
-        
+        internal virtual byte RTS(){ return 0;}
+
         /// <summary>
         /// Subtract with Carry
         /// </summary>
         /// <returns></returns>
-        public byte SBC()
+        internal virtual byte SBC()
         {
             Int16 newValue = A;
             newValue -= fetched;
@@ -1739,95 +1739,95 @@ namespace Lib6502
         /// Sets the Clear flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte SEC()
+        internal virtual byte SEC()
         {
             C = true;
 
             return 0;
         }
-        
+
         /// <summary>
         /// Sets the Decimal flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte SED()
+        internal virtual byte SED()
         {
             D = true;
             return 0;
         }
-        
+
         /// <summary>
         /// Sets the Interrupt flag
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte SEI()
+        internal virtual byte SEI()
         {
             I = true;
             return 0;
         }
-        
+
         /// <summary>
         /// Store the next byte read into the A register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte STA()
+        internal virtual byte STA()
         { 
             return 0;
         }
-        
+
         /// <summary>
         /// Store the next byte read into the X register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte STX()
+        internal virtual byte STX()
         { 
             return 0;
         }
-        
+
         /// <summary>
         /// Store the next byte read into the Y register
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        public byte STY()
+        internal virtual byte STY()
         { 
             return 0;
-        } 
-        
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte TAX(){ return 0;} 
-        
+        internal virtual byte TAX(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte TAY(){ return 0;}
-        
+        internal virtual byte TAY(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte TSX(){ return 0;} 
-        
+        internal virtual byte TSX(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte TXA(){ return 0;} 
-        
+        internal virtual byte TXA(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte TXS(){ return 0;} 
-        
+        internal virtual byte TXS(){ return 0;}
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte TYA(){ return 0;}
+        internal virtual byte TYA(){ return 0;}
         #endregion
 
         byte Read(ushort address)
