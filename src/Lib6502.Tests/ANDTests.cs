@@ -22,6 +22,17 @@ namespace Lib6502.Tests
         }
 
         [Test]
+        public void And_ReturnsPostiveAdditionalCycles()
+        {
+            sut.A = 0x00;
+            sut.fetched = 0x00;
+
+            var actual = sut.AND();
+
+            Assert.AreEqual(1, actual);
+        }
+
+        [Test]
         public void And_ZeroAccumulatorZeroOperand_FlagsSet()
         {
             sut.A = 0x00;

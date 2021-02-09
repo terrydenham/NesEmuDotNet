@@ -22,6 +22,17 @@ namespace Lib6502.Tests
         }
 
         [Test]
+        public void AddWithCarry_ReturnsPositiveAdditionalCycles()
+        {
+            sut.A = 0x00;
+            sut.fetched = 0x00;
+
+            var actual = sut.ADC();
+
+            Assert.AreEqual(1, actual);
+        }
+
+        [Test]
         public void AddWithCarry_ZeroWithZeroWithZeroCarry_FlagsSet()
         {
             sut.A = 0x00;

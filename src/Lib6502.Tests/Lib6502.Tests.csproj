@@ -1,9 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Label="FineCodeCoverage">
+    <Enabled>False</Enabled>
   </PropertyGroup>
 
   <ItemGroup>

@@ -58,8 +58,9 @@ namespace Lib6502
     }
     public class m6502
     {
-        public m6502(Memory memory)
+        public m6502(Memory memory, System.IO.StreamWriter debugStream = null)
         {
+            this.debugStream = debugStream;
 
             Instructions = new ReadOnlyCollection<CpuInstruction>(new[] {
     new CpuInstruction("BRK", this.A_IMP, this.BRK, 1, 7), new CpuInstruction("ORA", this.A_IZX, this.ORA, 2, 6), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ORA", this.A_ZP0, this.ORA, 2, 3), new CpuInstruction("ASL", this.A_ZP0, this.ASL, 2, 5), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("PHP", this.A_IMP, this.PHP, 1, 3), new CpuInstruction("ORA", this.A_IMM, this.ORA, 2, 2), new CpuInstruction("ASL", this.A_ACC, this.ASL, 1, 2), new CpuInstruction("???", this.XXX, this.XXX, 0, 0), new CpuInstruction("???", this.XXX  , this.XXX, 0, 0), new CpuInstruction("ORA", this.A_ABS, this.ORA, 3, 4), new CpuInstruction("ASL", this.A_ABS, this.ASL, 3, 6), new CpuInstruction("???", this.XXX, this.XXX, 0, 0),
@@ -120,7 +121,9 @@ namespace Lib6502
             if (Cycles == 0)
             {
                 byte opcode = bus.Read(PC++);
-
+#if OPTIMIZE_CLOCK
+                Cycles += ExecuteOpCode(opcode);
+#else
                 CpuInstruction instruction = Instructions[opcode];
 
                 Cycles = instruction.Cycles;
@@ -130,9 +133,613 @@ namespace Lib6502
 
                 Cycles += (byte)(additionalCpuCyclesFromMemoryMode & additionalCpuCyclesFromOperation);
 
+                if (useAccumulator)
+                {
+                    A = fetched;
+                    useAccumulator = false;
+                }
+#endif
             }
          
             Cycles--;
+        }
+
+        internal byte ExecuteOpCode(byte opcode)
+        {
+            byte hi = (byte)(opcode & 0xF0);
+            byte lo = (byte)(opcode & 0x0F);
+
+            byte evenOdd = (byte)((hi >> 4) & 1);
+            byte nibbleHiLo = (byte)((hi >> 4) & 0x8);
+
+            byte ec = 0; // extra cycles;
+            switch(lo)
+            {
+                case 0x00:
+                    switch (hi)
+                    {
+                        case 0x00:
+                            A_IMP();
+                            BRK();
+                            break;
+                        case 0x10:
+                            A_REL();
+                            BPL();
+                            break;
+                        case 0x20:
+                            A_ABS();
+                            JSR();
+                            break;
+                        case 0x30:
+                            A_REL();
+                            BMI();
+                            break;
+                        case 0x40:
+                            A_IMP();
+                            RTI();
+                            break;
+                        case 0x50:
+                            A_REL();
+                            BVC();
+                            break;
+                        case 0x60:
+                            A_IMP();
+                            RTS();
+                            break;
+                        case 0x70:
+                            A_REL();
+                            BVS();
+                            break;
+                        //case 0x80:
+                        //    break;
+                        case 0x90:
+                            A_REL();
+                            BCC();
+                            break;
+                        case 0xA0:
+                            A_IMM();
+                            LDY();
+                            break;
+                        case 0xB0:
+                            A_REL();
+                            BCS();
+                            break;
+                        case 0xC0:
+                            A_IMM();
+                            CPY();
+                            break;
+                        case 0xD0:
+                            A_REL();
+                            BNE();
+                            break;
+                        case 0xE0:
+                            A_IMM();
+                            CPX();
+                            break;
+                        case 0xF0:
+                            A_REL();
+                            BEQ();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x01:
+                    if (0 == evenOdd)
+                        A_IZX();
+                    else
+                        A_IZY();
+
+                    switch(hi)
+                    {
+                        case 0x00:
+                        case 0x10:
+                            ORA();
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            AND();
+                            ec += 2;
+                            break;
+                        case 0x40:
+                        case 0x50:
+                            EOR();
+                            break;
+                        case 0x60:
+                        case 0x70:
+                            ADC();
+                            ec += 2;
+                            break;
+                        case 0x80:
+                        case 0x90:
+                            STA();
+                            break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDA();
+                            break;
+                        case 0xC0:
+                        case 0xD0:
+                            CMP();
+                            break;
+                        case 0xE0:
+                        case 0xF0:
+                            SBC();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x02:
+                    switch(hi)
+                    {
+                        case 0xA0:
+                            A_IMM();
+                            LDX();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                //case 0x03:
+                //    break;
+                case 0x04:
+                    if (0 == evenOdd)
+                        A_ZP0();
+                    else
+                        A_ZPX();
+
+                    switch(hi)
+                    {
+                        case 0x20:
+                            BIT();
+                            break;
+                        case 0x80:
+                        case 0x90:
+                            STY();
+                            break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDY();
+                            break;
+                        case 0xC0:
+                            CPY();
+                            break;
+                        case 0xE0:
+                            CPX();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x05:
+                    if (0 == evenOdd)
+                        A_ZP0();
+                    else
+                        A_ZPX();
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                        case 0x10:
+                            ORA();
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            AND();
+                            ec += 2;
+                            break;
+                        case 0x40:
+                        case 0x50:
+                            EOR();
+                            break;
+                        case 0x60:
+                        case 0x70:
+                            ADC();
+                            ec += 2;
+                            break;
+                        case 0x80:
+                        case 0x90:
+                            STA();
+                            break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDA();
+                            break;
+                        case 0xC0:
+                        case 0xD0:
+                            CMP();
+                            break;
+                        case 0xE0:
+                        case 0xF0:
+                            SBC();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x06:
+                    if (0 == evenOdd)
+                        A_ZP0();
+                    else
+                    {
+                        if (0 == nibbleHiLo)
+                            A_ZPX();
+                        else
+                            A_ZPY();
+                    }
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                        case 0x10:
+                            ASL();
+                            ec += 2;
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            ROL();
+                            break;
+                        case 0x40:
+                        case 0x50:
+                            LSR();
+                            break;
+                        case 0x60:
+                        case 0x70:
+                            ROR();
+                            break;
+                        case 0x80:
+                        case 0x90:
+                            STX();
+                            break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDX();
+                            break;
+                        case 0xC0:
+                        case 0xD0:
+                            DEC();
+                            break;
+                        case 0xE0:
+                        case 0xF0:
+                            INC();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                //case 0x07:
+                //    break;
+                case 0x08:
+                    A_IMP();
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                            PHP();
+                            break;
+                        case 0x10:
+                            CLC();
+                            break;
+                        case 0x20:
+                            PLP();
+                            break;
+                        case 0x30:
+                            SEC();
+                            break;
+                        case 0x40:
+                            PHA();
+                            break;
+                        case 0x50:
+                            CLI();
+                            break;
+                        case 0x60:
+                            PLA();
+                            break;
+                        case 0x70:
+                            SEI();
+                            break;
+                        case 0x80:
+                            DEY();
+                            break;
+                        case 0x90:
+                            TYA();
+                            break;
+                        case 0xA0:
+                            TAY();
+                            break;
+                        case 0xB0:
+                            CLV();
+                            break;
+                        case 0xC0:
+                            INY();
+                            break;
+                        case 0xD0:
+                            CLD();
+                            break;
+                        case 0xE0:
+                            INX();
+                            break;
+                        case 0xF0:
+                            SED();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x09:
+                    if (0 == evenOdd)
+                        A_IMM();
+                    else
+                        A_ABY();
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                        case 0x10:
+                            ORA();
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            AND();
+                            ec += 2;
+                            break;
+                        case 0x40:
+                        case 0x50:
+                            EOR();
+                            break;
+                        case 0x60:
+                        case 0x70:
+                            ADC();
+                            ec += 2;
+                            break;
+                        //case 0x80:
+                        //    break;
+                        case 0x90:
+                            STA();
+                            break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDA();
+                            break;
+                        case 0xC0:
+                        case 0xD0:
+                            CMP();
+                            break;
+                        case 0xE0:
+                        case 0xF0:
+                            SBC();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x0A:
+                    if (0 == nibbleHiLo)
+                        ec = A_ACC();
+                    else
+                        ec = A_IMP();
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                            ec = ASL();
+                            ec += 2;
+                            break;
+                        //case 0x10:
+                        //    break;
+                        case 0x20:
+                            ROL();
+                            break;
+                        //case 0x30:
+                        //    break;
+                        case 0x40:
+                            LSR();
+                            break;
+                        //case 0x50:
+                        //    break;
+                        case 0x60:
+                            ROR();
+                            break;
+                        //case 0x70:
+                        //    break;
+                        case 0x80:
+                            TXA();
+                            break;
+                        case 0x90:
+                            TXS();
+                            break;
+                        case 0xA0:
+                            TAX();
+                            break;
+                        case 0xB0:
+                            TSX();
+                            break;
+                        case 0xC0:
+                            DEX();
+                            break;
+                        //case 0xD0:
+                        //    break;
+                        case 0xE0:
+                            NOP();
+                            break;
+                        //case 0xF0:
+                        //    break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                //case 0x0B:
+                //    break;
+                case 0x0C:
+                    switch (hi)
+                    {
+                        //case 0x00:
+                        //    break;
+                        //case 0x10:
+                        //    break;
+                        case 0x20:
+                            A_ABS();
+                            BIT();
+                            break;
+                        //case 0x30:
+                        //    break;
+                        case 0x40:
+                            A_ABS();
+                            JMP();
+                            break;
+                        //case 0x50:
+                        //    break;
+                        case 0x60:
+                            A_IND();
+                            JMP();
+                            break;
+                        //case 0x70:
+                        //    break;
+                        case 0x80:
+                            A_ABS();
+                            STY();
+                            break;
+                        //case 0x90:
+                        //    break;
+                        case 0xA0:
+                            A_ABS();
+                            LDY();
+                            break;
+                        case 0xB0:
+                            A_ABX();
+                            LDY();
+                            break;
+                        case 0xC0:
+                            A_ABS();
+                            CPY();
+                            break;
+                        //case 0xD0:
+                        //    break;
+                        case 0xE0:
+                            A_ABS();
+                            CPX();
+                            break;
+                        //case 0xF0:
+                        //    break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x0D:
+                    if (0 == evenOdd)
+                        A_ABS();
+                    else
+                        A_ABX();
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                        case 0x10:
+                            ORA();
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            AND();
+                            ec += 2;
+                            break;
+                        case 0x40:
+                        case 0x50:
+                            EOR();
+                            break;
+                        case 0x60:
+                        case 0x70:
+                            ADC();
+                            ec += 2;
+                            break;
+                        case 0x80:
+                        case 0x90:
+                            STA();
+                            break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDA();
+                            break;
+                        case 0xC0:
+                        case 0xD0:
+                            CMP();
+                            break;
+                        case 0xE0:
+                        case 0xF0:
+                            SBC();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                case 0x0E:
+                    if (0 == evenOdd)
+                        A_ABS();
+                    else
+                    {
+                        if (0xB0 == hi)
+                            A_ABY();
+                        else
+                            A_ABX();
+                    }
+
+                    switch (hi)
+                    {
+                        case 0x00:
+                        case 0x10:
+                            ASL();
+                            ec += 2;
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            ROL();
+                            break;
+                        case 0x40:
+                        case 0x50:
+                            LSR();
+                            break;
+                        case 0x60:
+                        case 0x70:
+                            ROR();
+                            break;
+                        case 0x80:
+                            STX();
+                            break;
+                        //case 0x90:
+                        //    break;
+                        case 0xA0:
+                        case 0xB0:
+                            LDX();
+                            break;
+                        case 0xC0:
+                        case 0xD0:
+                            DEC();
+                            break;
+                        case 0xE0:
+                        case 0xF0:
+                            INC();
+                            break;
+                        default:
+                            goto ExecuteOpCode_UnknownOpCode;
+                    }
+                    break;
+                //case 0x0F:
+                //    break;
+                default:
+                    goto ExecuteOpCode_UnknownOpCode;
+            }
+
+            goto ExecuteOpCode_Exit;
+
+        ExecuteOpCode_UnknownOpCode:
+            var errorString = String.Format("Unknown opcode %d", opcode);
+            
+            debugStream?.WriteLine(errorString);
+
+            throw new InvalidProgramException(errorString);
+
+        ExecuteOpCode_Exit:
+            return ec;
         }
 
         public void Reset() 
@@ -143,6 +750,7 @@ namespace Lib6502
             status.B = status.C = status.D = status.I = status.N = status.V = status.U = status.Z = 0;
             Cycles = 0;
             Flags = CpuFlags.Empty;
+            useAccumulator = false;
         }
 
         public void Irq() { }
@@ -305,6 +913,18 @@ namespace Lib6502
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         public byte A_ABS()
         {
+            return this.A_ABS(false);
+        }
+
+        public byte A_ABS(bool postOperation)
+        {
+            if(postOperation)
+            {
+                addr_abs = fetched;
+
+                return 0;
+            }
+
             var lo = Read(PC);
             PC++;
             var hi = Read(PC);
@@ -598,8 +1218,6 @@ namespace Lib6502
 
             N = (fetched & 0x80) == 0x80;
             Z = fetched == 0;
-
-            A = fetched;
 
             return 0;
         } 
@@ -1255,7 +1873,8 @@ namespace Lib6502
         internal ushort addr_abs;  // absolute address reference
         internal ushort addr_rel;  // relative address reference
         protected Bus bus;
-
+        private bool useAccumulator;
+        private System.IO.StreamWriter debugStream;
 //        protected ReadOnlyCollection<CpuInstruction> instructions;
 
     }

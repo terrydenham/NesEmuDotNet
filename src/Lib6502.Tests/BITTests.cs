@@ -21,6 +21,18 @@ namespace Lib6502.Tests
             sut.Reset();
         }
 
+
+        [Test]
+        public void BIT_ReturnsZeroAdditionalCycles()
+        {
+            sut.A = 0x00;
+            sut.fetched = 0x00;
+
+            byte actual = sut.BIT();
+
+            Assert.AreEqual(0, actual);
+        }
+
         [Test]
         public void BIT_WithZeroAccumulatorAndZeroOperand_ResultsInZeroFlagSet()
         {
