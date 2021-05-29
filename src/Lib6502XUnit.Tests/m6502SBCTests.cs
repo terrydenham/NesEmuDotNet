@@ -32,7 +32,7 @@ namespace Lib6502XUnit.Tests
 
             Assert.Equal(expectedValue, sut.A);
             Helper.AssertFlags(sut, expectedFlags);
-
+            Assert.Equal(expectedCycles, sut.Cycles);
         }
 
         public static IEnumerable<object[]> Data =>

@@ -22,21 +22,22 @@ namespace Lib6502
         B = (1 << 4),
         U = (1 << 5),
         V = (1 << 6),
-        N = (1 << 7)
+        N = (1 << 7),
+        All = C | Z | I | D | B | U | V | N
     }
 
-    [StructLayout(LayoutKind.Explicit, Size = 1, CharSet = CharSet.Ansi)]
-    public struct CpuStatus
-    {
-        [FieldOffset(0)] public byte C;
-        [FieldOffset(1)] public byte Z;
-        [FieldOffset(2)] public byte I;
-        [FieldOffset(3)] public byte D;
-        [FieldOffset(4)] public byte U;
-        [FieldOffset(5)] public byte B;
-        [FieldOffset(6)] public byte V;
-        [FieldOffset(7)] public byte N;
-    }
+    //[StructLayout(LayoutKind.Explicit, Size = 1, CharSet = CharSet.Ansi)]
+    //public struct CpuStatus
+    //{
+    //    [FieldOffset(0)] public byte C;
+    //    [FieldOffset(1)] public byte Z;
+    //    [FieldOffset(2)] public byte I;
+    //    [FieldOffset(3)] public byte D;
+    //    [FieldOffset(4)] public byte U;
+    //    [FieldOffset(5)] public byte B;
+    //    [FieldOffset(6)] public byte V;
+    //    [FieldOffset(7)] public byte N;
+    //}
 
     public struct CpuInstruction
     {
@@ -101,12 +102,17 @@ namespace Lib6502
         {
             if (Cycles == 0)
             {
+                // increment the program counter after reading 
+                // the instruction at the current program counter location
                 byte opcode = bus.Read(PC++);
+
 #if OPTIMIZE_CLOCK
                 Cycles += ExecuteOpCode(opcode);
 #else
+                // lookup the CpuInstruction by the opcode
                 CpuInstruction instruction = Instructions[opcode];
 
+                // the cpu instruction default clock cycles before considering address mode
                 Cycles = instruction.Cycles;
 
                 byte additionalCpuCyclesFromMemoryMode = instruction.AddressMode();
@@ -130,12 +136,11 @@ namespace Lib6502
         /// </summary>
         public void Reset() 
         {
-            PC = 0x100;
-            SP = 0xFF;
+            PC = 0x200;
+            SP = 0x1FF;
             A = X = Y = 0;
-            status.B = status.C = status.D = status.I = status.N = status.V = status.U = status.Z = 0;
+            Status = CpuFlags.Empty;
             Cycles = 0;
-            Flags = CpuFlags.Empty;
             useAccumulator = false;
         }
 
@@ -152,108 +157,97 @@ namespace Lib6502
         #region Cpu Flags
         public Boolean C
         {
-            get { return status.C > 0; }
-            protected set {
+            get { return (Status & CpuFlags.C) != 0; }
+            protected set
+            {
                 if (value)
-                {
-                    status.C = 1;
-                    Flags |= CpuFlags.C;
-                }
+                    Status |= CpuFlags.C;
                 else
-                {
-                    status.C = 0;
-                    Flags &= ~CpuFlags.C;
-                }
+                    Status &= ~CpuFlags.C;
             }
         }
 
         public Boolean Z
         {
-            get { return status.Z > 0; }
+            get { return (Status & CpuFlags.Z) != 0; }
             protected set
             {
                 if (value)
-                {
-                    status.Z = 1;
-                    Flags |= CpuFlags.Z;
-                }
+                    Status |= CpuFlags.Z;
                 else
-                {
-                    status.Z = 0;
-                    Flags &= ~CpuFlags.Z;
-                }
+                    Status &= ~CpuFlags.Z;
             }
         }
 
         public Boolean I
         {
-            get { return status.I > 0; }
+            get { return (Status & CpuFlags.I) != 0; }
             protected set
             {
                 if (value)
-                    status.I = 1;
+                    Status |= CpuFlags.I;
                 else
-                    status.I = 0;
+                    Status &= ~CpuFlags.I;
             }
         }
 
         public Boolean D
         {
-            get { return status.D > 0; }
+            get { return (Status & CpuFlags.D) != 0; }
             protected set
             {
                 if (value)
-                    status.D = 1;
+                    Status |= CpuFlags.D;
                 else
-                    status.D = 0;
+                    Status &= ~CpuFlags.D;
             }
         }
 
         public Boolean U
         {
-            get { return status.U > 0; }
+            get { return (Status & CpuFlags.U) != 0; }
             protected set
             {
                 if (value)
-                    status.U = 1;
+                    Status |= CpuFlags.U;
                 else
-                    status.U = 0;
+                    Status &= ~CpuFlags.U;
             }
         }
 
         public Boolean B
         {
-            get { return status.B > 0; }
+            get { return (Status & CpuFlags.B) != 0; }
             protected set
             {
                 if (value)
-                    status.B = 1;
+                    Status |= CpuFlags.B;
                 else
-                    status.B = 0;
+                    Status &= ~CpuFlags.B;
             }
         }
 
         public Boolean V
         {
-            get { return status.V > 0; }
+            get { return (Status & CpuFlags.V) != 0; }
             protected set
             {
                 if (value)
-                    status.V = 1;
+                    Status |= CpuFlags.V;
                 else
-                    status.V = 0;
+                    Status &= ~CpuFlags.V;
             }
         }
 
         public Boolean N
         {
-            get { return status.N > 0; }
+            get { return (Status & CpuFlags.N) != 0; }
             protected set
             {
                 if (value)
-                    status.N = 1;
+                    Status |= CpuFlags.N;
                 else
-                    status.N = 0;
+                    Status &= ~CpuFlags.N;
             }
         }
         #endregion
@@ -266,7 +260,7 @@ namespace Lib6502
         /// <summary>
         /// The current stack pointer
         /// </summary>
-        public byte SP { get; internal set; }
+        public ushort SP { get; internal set; }
 
         /// <summary>
         /// The A register, or accumulator
@@ -292,7 +286,7 @@ namespace Lib6502
         /// <summary>
         /// CPU flags represented as an enumeration
         /// </summary>
-        public CpuFlags Flags { get; internal set; }
+        public CpuFlags Status { get; internal set; }
 
         /// <summary>
         /// 
@@ -335,7 +329,7 @@ namespace Lib6502
 
             fetched = Read(addr_abs);
 
-            byte rv = 2;
+            byte rv = 0;
 
             // if the referenced address is not on the same page as the current program counter
             if (!AreOnSamePage())
@@ -359,7 +353,7 @@ namespace Lib6502
 
             fetched = Read(addr_abs);
 
-            byte rv = 2;
+            byte rv = 0;
 
             // if the referenced address is not on the same page as the current program counter
             if (!AreOnSamePage())
@@ -369,12 +363,13 @@ namespace Lib6502
         }
 
         /// <summary>
-        /// 
+        /// Accumulator address mode. Read the value from the Accumulator
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         internal virtual byte A_ACC()
         {
             fetched = A;
+
             return 0;
         }
 
@@ -404,7 +399,7 @@ namespace Lib6502
         }
 
         /// <summary>
-        /// 
+        /// Indirect address mode. 
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
         internal virtual byte A_IND()
@@ -446,6 +441,10 @@ namespace Lib6502
 
             PC++;
 
+            //byte rv = 0;
+            //if (!AreOnSamePage())
+            //    rv++;
+
             return 0; 
         }
 
@@ -473,9 +472,11 @@ namespace Lib6502
 
             PC++;
 
-            // TODO : figure out if the addr_abs is not on the same page. This would 
-            // mean we need additional CPU cycles.
-            return 0;
+            byte rv = 0;
+            if (!AreOnSamePage())
+                rv++;
+
+            return rv;
         }
 
         /// <summary>
@@ -497,7 +498,11 @@ namespace Lib6502
             //if ((addr_abs & 0x80) == 0x80)
             //    addr_abs |= 0xFF00;
 
-            return 0; 
+            byte rv = 0;
+            if (!AreOnSamePage())
+                rv++;
+
+            return rv;
         }
 
         /// <summary>
@@ -512,7 +517,7 @@ namespace Lib6502
 
             fetched = Read(addr_abs);
 
-            return 1; 
+            return 0; 
         }
 
         /// <summary>
@@ -527,7 +532,7 @@ namespace Lib6502
 
             fetched = Read(addr_abs);
 
-            return 2; 
+            return 0; 
         }
 
         /// <summary>
@@ -542,7 +547,12 @@ namespace Lib6502
 
             fetched = Read(addr_abs);
 
-            return 0;
+            byte rv = 3;
+
+            if (!AreOnSamePage())
+                rv++;
+
+            return rv;
         }
 
         /// <summary>
@@ -569,17 +579,11 @@ namespace Lib6502
             newValue += fetched;
             newValue += (C ? 1 : 0);
 
-            if ((byte)newValue == 0x00)
-                Z = true;
+            Z = (byte)newValue == 0x00;
 
-            if (newValue < 0)
-                N = true;
+            N = (newValue & 0b_1000_0000) == 0b_1000_0000;
 
-            if ((newValue & 0x80) == 0x80)
-            {
-                // V = true;
-                C = true;
-            }
+            C = (newValue & 0x100) == 0x100;
 
             A = (byte)newValue;
 
@@ -771,7 +775,7 @@ namespace Lib6502
         /// <returns></returns>
         internal virtual byte BRK() 
         {
-            PC++;
+            PC += 2;
             B = true;
 
             return 0; 
@@ -873,18 +877,13 @@ namespace Lib6502
         /// <returns></returns>
         internal virtual byte CMP()
         {
-            short t = (short)(A - fetched);
+            Z = A == fetched;
+            C = A >= fetched;
 
-            if (t > 0)
-                C = true;
+            byte t = (byte)(A - fetched);
             
-            if (t == 0)
-            {
-                C = true;
-                Z = true;
-            }
-
-            if (t < 0)
+            // check if the high order bit is set
+            if ((t & 0b_1000_0000) == 0b_1000_0000)
                 N = true;
 
             return 0;
@@ -895,7 +894,16 @@ namespace Lib6502
         /// </summary>
         /// <returns></returns>
         internal virtual byte CPX()
-        { 
+        {
+            Z = X == fetched;
+            C = X >= fetched;
+
+            byte t = (byte)(X - fetched);
+
+            // check if the high order bit is set
+            if ((t & 0b_1000_0000) == 0b_1000_0000)
+                N = true;
+
             return 0;
         }
 
@@ -904,7 +912,16 @@ namespace Lib6502
         /// </summary>
         /// <returns></returns>
         internal virtual byte CPY()
-        { 
+        {
+            Z = Y == fetched;
+            C = Y >= fetched;
+
+            byte t = (byte)(Y - fetched);
+
+            // check if the high order bit is set
+            if ((t & 0b_1000_0000) == 0b_1000_0000)
+                N = true;
+
             return 0;
         }
 
@@ -956,10 +973,21 @@ namespace Lib6502
         }
 
         /// <summary>
-        /// 
+        /// Exclusive OR Memory with Accumulator
         /// </summary>
         /// <returns></returns>
-        internal virtual byte EOR(){ return 0;}
+        internal virtual byte EOR()
+        {
+            byte t = (byte)(A ^ fetched);
+
+            Z = t == 0;
+
+            N = (t & 0b_1000_0000) == 0b_1000_0000;
+
+            A = t;
+
+            return 0;
+        }
 
         /// <summary>
         /// Increment the value in the A register
@@ -973,7 +1001,7 @@ namespace Lib6502
 
             Z = t == 0;
 
-            N = (t & 0x8) == 0x8;
+            N = (t & 0b_1000_0000) == 0b_1000_0000;
 
             return 0;
         }
@@ -988,7 +1016,7 @@ namespace Lib6502
 
             Z = X == 0;
 
-            N = (X & 0x8) == 0x8;
+            N = (X & 0b_1000_0000) == 0b_1000_0000;
 
             return 0;
         }
@@ -999,11 +1027,11 @@ namespace Lib6502
         /// <returns></returns>
         internal virtual byte INY()
         {
-            Y--;
+            Y++;
 
             Z = Y == 0;
 
-            N = (Y & 0x8) == 0x8;
+            N = (Y & 0b_1000_0000) == 0b_1000_0000;
 
             return 0;
         }
@@ -1012,97 +1040,234 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns></returns>
-        internal virtual byte JMP(){ return 0;}
+        internal virtual byte JMP()
+        {
+            PC = addr_abs;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Jump to Subroutine specified in Address
+        /// </summary>
+        /// <returns></returns>
+        internal virtual byte JSR()
+        {
+            byte lo = (byte)(PC & 0xFF);
+            byte hi = (byte)(PC >> 8);
+
+            PushStack(lo);
+            PushStack(hi);
+
+            PC = addr_abs;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Loads the value from memory into the Accumulator
+        /// </summary>
+        /// <returns></returns>
+        internal virtual byte LDA()
+        {
+            A = fetched;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Loads the value from memory into the X register
+        /// </summary>
+        /// <returns></returns>
+        internal virtual byte LDX()
+        {
+            X = fetched;
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Loads the value from memory into the Y register
+        /// </summary>
+        /// <returns></returns>
+        internal virtual byte LDY()
+        {
+            Y = fetched;
+
+            return 0;
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        internal virtual byte JSR(){ return 0;}
+        internal virtual byte LSR()
+        {
+            N = false;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        internal virtual byte LDA(){ return 0;}
+            C = (fetched & 0b_0000_0001) == 0b_0000_0001;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        internal virtual byte LDX(){ return 0;}
+            fetched = (byte)(fetched >> 1);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        internal virtual byte LDY(){ return 0;}
+            Z = fetched == 0;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        internal virtual byte LSR(){ return 0;}
+            return 0;
+        }
 
         /// <summary>
         /// Perform a no-op, or non-operation
         /// </summary>
         /// <returns>Non zero if the operation requires additiona CPU cycles</returns>
-        internal virtual byte NOP(){ return 0;}
+        internal virtual byte NOP()
+        {
+            return 0;
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        internal virtual byte ORA(){ return 0;}
+        internal virtual byte ORA()
+        {
+            byte t = (byte)(A | fetched);
+
+            N = (t & 0b_1000_0000) == 0b_1000_0000;
+            
+            Z = t == 0;
+
+            A = t;
+
+            return 0;
+        }
 
         /// <summary>
-        /// 
+        /// (P)us(H) the (A)ccumulator onto the Stack
         /// </summary>
         /// <returns></returns>
-        internal virtual byte PHA(){ return 0;}
+        internal virtual byte PHA()
+        {
+            PushStack(A);
+
+            return 3;
+        }
 
         /// <summary>
-        /// 
+        /// (P)us(H)es the CPU (P)rocessor status onto the stack
         /// </summary>
         /// <returns></returns>
-        internal virtual byte PHP(){ return 0;}
+        internal virtual byte PHP()
+        {
+
+            PushStack((byte)Status);
+
+            return 3;
+        }
 
         /// <summary>
-        /// 
+        /// (P)ul(L) the stack into the (A)ccumulator
         /// </summary>
         /// <returns></returns>
-        internal virtual byte PLA(){ return 0;}
+        internal virtual byte PLA()
+        {
+            //A = Read(SP);
+
+            //Write(SP, 0x0);
+
+            A = PopStack();
+
+            return 4;
+        }
 
         /// <summary>
-        /// 
+        /// (P)ul(L)s the stack into the CPU (P)rocessor status
         /// </summary>
         /// <returns></returns>
-        internal virtual byte PLP(){ return 0;}
+        internal virtual byte PLP()
+        {
+            this.Status = (CpuFlags)PopStack();
+            //(CpuFlags)Read(SP);
+
+            //Write(SP, 0x0);
+
+            //PopStack();
+
+            return 4;
+        }
 
         /// <summary>
-        /// 
+        /// (RO)tate (L)eft
         /// </summary>
+        /// <remarks>ROR shifts all bits left by one position. Bit 7 is shifted into the Carry bit and the original Carry bit is shifted into bit 0</remarks>
         /// <returns></returns>
-        internal virtual byte ROL(){ return 0;}
+        internal virtual byte ROL()
+        {
+            byte oldC = (byte)(C ? 0x1 : 0x0);
+
+            // move the high order bit into the Carry flag
+            C = (fetched & 0x80) > 0;
+
+            //unchecked
+            //{
+            //    // remove the high order bit
+            //    fetched &= (byte)~(0x80);
+            //}
+
+            // shift everything left
+            fetched = (byte)(fetched << 1);
+
+            // move the old Carry bit into the low order bit
+            fetched |= oldC;
+
+            Z = fetched == 0;
+            
+            N = (fetched & 0x80) > 0;
+
+            return 0;
+        }
 
         /// <summary>
-        /// 
+        /// (RO)tate (R)ight
         /// </summary>
+        /// <remarks>ROR shifts all bits right by one position. The Carry bit is shifted into bit 7 and the original bit 0 is shifted into the Carry</remarks>
         /// <returns></returns>
-        internal virtual byte ROR(){ return 0;}
+        internal virtual byte ROR()
+        {
+            byte lsb = (byte)(fetched & 0x01);
+
+            fetched = (byte)(fetched >> 1);
+
+            fetched |= (byte)((C ? 1 : 0) << 7);
+
+            Z = fetched == 0;
+
+            N = (fetched & 0x80) > 0;
+
+            C = lsb > 0 ? true : false;
+
+            return 0;
+        }
 
         /// <summary>
-        /// 
+        /// (R)e(T)urn from (I)nterrupt
         /// </summary>
         /// <returns></returns>
         internal virtual byte RTI(){ return 0;}
 
         /// <summary>
-        /// 
+        /// (R)e(T)urn to (S)ubroutine
         /// </summary>
         /// <returns></returns>
-        internal virtual byte RTS(){ return 0;}
+        internal virtual byte RTS()
+        {
+            byte lo = PopStack();
+            //PopStack();
+            byte hi = PopStack();
+            // PopStack();
+
+            PC = MakeAddress(hi, lo);
+                
+            return 6;
+        }
 
         /// <summary>
         /// Subtract with Carry
@@ -1204,7 +1369,14 @@ namespace Lib6502
         /// 
         /// </summary>
         /// <returns></returns>
-        internal virtual byte TSX(){ return 0;}
+        internal virtual byte TSX()
+        {
+            X = Read(SP);
+
+            SP++;
+
+            return 2;
+        }
 
         /// <summary>
         /// 
@@ -1213,10 +1385,17 @@ namespace Lib6502
         internal virtual byte TXA(){ return 0;}
 
         /// <summary>
-        /// 
+        /// Transfer the contents of the X register onto the stack and moves the stack down one
         /// </summary>
         /// <returns></returns>
-        internal virtual byte TXS(){ return 0;}
+        internal virtual byte TXS()
+        {
+            Write(SP, X);
+
+            SP--;
+
+            return 2;
+        }
 
         /// <summary>
         /// 
@@ -1239,6 +1418,29 @@ namespace Lib6502
         }
 
         /// <summary>
+        /// Executes the current instruction at the program counter
+        /// </summary>
+        /// <returns>The number of Cycles required for the instruction</returns>
+        internal byte Execute()
+        {
+            byte opCode = bus.Read(PC++);
+
+            // lookup the CpuInstruction by the opcode
+            CpuInstruction instruction = Instructions[opCode];
+
+            // the cpu instruction default clock cycles before considering address mode
+            Cycles = instruction.Cycles;
+
+            // check if the address mode or the operation requires additional clock cycles
+            byte additionalCpuCyclesFromMemoryMode = instruction.AddressMode();
+            byte additionalCpuCyclesFromOperation = instruction.Operation();
+
+            Cycles += (byte)(additionalCpuCyclesFromMemoryMode & additionalCpuCyclesFromOperation);
+
+            return Cycles;
+        }
+/*
+        /// <summary>
         /// Calls the internal functions for the given opcode
         /// </summary>
         /// <param name="opcode"></param>
@@ -1252,72 +1454,119 @@ namespace Lib6502
             byte nibbleHiLo = (byte)((hi >> 4) & 0x8);
 
             byte ec = 0; // extra cycles;
+
+            bool useAccumulator = false;
+            Func<byte> addressFunction = null;
+            Func<byte> operationFunction = null;
+
             switch (lo)
             {
                 case 0x00:
                     switch (hi)
                     {
                         case 0x00:
-                            A_IMP();
-                            BRK();
+                            addressFunction = A_IMP;
+                            operationFunction = BRK;
+
+                            ec += A_IMP();
+                            ec += BRK();
                             break;
                         case 0x10:
-                            A_REL();
-                            BPL();
+                            addressFunction = A_REL;
+                            operationFunction = BPL;
+
+                            ec += A_REL();
+                            ec += BPL();
                             break;
                         case 0x20:
-                            A_ABS();
-                            JSR();
+                            addressFunction = A_ABS;
+                            operationFunction = JSR;
+
+                            ec += A_ABS();
+                            ec += JSR();
                             break;
                         case 0x30:
-                            A_REL();
-                            BMI();
+                            addressFunction = A_REL;
+                            operationFunction = BMI;
+
+                            ec += A_REL();
+                            ec += BMI();
                             break;
                         case 0x40:
-                            A_IMP();
-                            RTI();
+                            addressFunction = A_IMP;
+                            operationFunction = RTI;
+
+                            ec += A_IMP();
+                            ec += RTI();
                             break;
                         case 0x50:
-                            A_REL();
-                            BVC();
+                            addressFunction = A_REL;
+                            operationFunction = BVC;
+
+                            ec += A_REL();
+                            ec += BVC();
                             break;
                         case 0x60:
-                            A_IMP();
-                            RTS();
+                            addressFunction = A_IMP;
+                            operationFunction = RTS;
+
+                            ec += A_IMP();
+                            ec += RTS();
                             break;
                         case 0x70:
-                            A_REL();
-                            BVS();
+                            addressFunction = A_REL;
+                            operationFunction = BVS;
+
+                            ec += A_REL();
+                            ec += BVS();
                             break;
                         //case 0x80:
                         //    break;
                         case 0x90:
-                            A_REL();
-                            BCC();
+                            addressFunction = A_REL;
+                            operationFunction = BCC;
+
+                            ec += A_REL();
+                            ec += BCC();
                             break;
                         case 0xA0:
-                            A_IMM();
-                            LDY();
+                            addressFunction = A_IMM;
+                            operationFunction = LDY;
+
+                            ec += A_IMM();
+                            ec += LDY();
                             break;
                         case 0xB0:
-                            A_REL();
-                            BCS();
+                            addressFunction = A_REL;
+                            operationFunction = BCS;
+
+                            ec += A_REL();
+                            ec += BCS();
                             break;
                         case 0xC0:
-                            A_IMM();
-                            CPY();
+                            addressFunction = A_IMM;
+                            operationFunction = CPY;
+
+                            ec += A_IMM();
+                            ec += CPY();
                             break;
                         case 0xD0:
-                            A_REL();
-                            BNE();
+                            addressFunction = A_REL;
+                            operationFunction = BNE;
+
+                            ec += A_REL();
+                            ec += BNE();
                             break;
                         case 0xE0:
-                            A_IMM();
-                            CPX();
+                            addressFunction = A_IMM;
+                            operationFunction = CPX;
+
+                            ec += A_IMM();
+                            ec += CPX();
                             break;
                         case 0xF0:
-                            A_REL();
-                            BEQ();
+                            ec += A_REL();
+                            ec += BEQ();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1325,45 +1574,44 @@ namespace Lib6502
                     break;
                 case 0x01:
                     if (0 == evenOdd)
-                        A_IZX();
+                        ec += A_IZX();
                     else
-                        A_IZY();
+                        ec += A_IZY();
 
                     switch (hi)
                     {
                         case 0x00:
                         case 0x10:
-                            ORA();
+                            ec += ORA();
                             break;
                         case 0x20:
                         case 0x30:
-                            AND();
+                            ec += AND();
                             ec += 2;
                             break;
                         case 0x40:
                         case 0x50:
-                            EOR();
+                            ec += EOR();
                             break;
                         case 0x60:
                         case 0x70:
-                            ADC();
-                            ec += 2;
+                            ec += ADC();
                             break;
                         case 0x80:
                         case 0x90:
-                            STA();
+                            ec += STA();
                             break;
                         case 0xA0:
                         case 0xB0:
-                            LDA();
+                            ec += LDA();
                             break;
                         case 0xC0:
                         case 0xD0:
-                            CMP();
+                            ec += CMP();
                             break;
                         case 0xE0:
                         case 0xF0:
-                            SBC();
+                            ec += SBC();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1373,8 +1621,8 @@ namespace Lib6502
                     switch (hi)
                     {
                         case 0xA0:
-                            A_IMM();
-                            LDX();
+                            ec += A_IMM();
+                            ec += LDX();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1384,28 +1632,28 @@ namespace Lib6502
                 //    break;
                 case 0x04:
                     if (0 == evenOdd)
-                        A_ZP0();
+                        ec += A_ZP0();
                     else
-                        A_ZPX();
+                        ec += A_ZPX();
 
                     switch (hi)
                     {
                         case 0x20:
-                            BIT();
+                            ec += BIT();
                             break;
                         case 0x80:
                         case 0x90:
-                            STY();
+                            ec += STY();
                             break;
                         case 0xA0:
                         case 0xB0:
-                            LDY();
+                            ec += LDY();
                             break;
                         case 0xC0:
-                            CPY();
+                            ec += CPY();
                             break;
                         case 0xE0:
-                            CPX();
+                            ec += CPX();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1421,37 +1669,36 @@ namespace Lib6502
                     {
                         case 0x00:
                         case 0x10:
-                            ORA();
+                            ec += ORA();
                             break;
                         case 0x20:
                         case 0x30:
-                            AND();
+                            ec += AND();
                             ec += 2;
                             break;
                         case 0x40:
                         case 0x50:
-                            EOR();
+                            ec += EOR();
                             break;
                         case 0x60:
                         case 0x70:
-                            ADC();
-                            ec += 2;
+                            ec += ADC();
                             break;
                         case 0x80:
                         case 0x90:
-                            STA();
+                            ec += STA();
                             break;
                         case 0xA0:
                         case 0xB0:
-                            LDA();
+                            ec += LDA();
                             break;
                         case 0xC0:
                         case 0xD0:
-                            CMP();
+                            ec += CMP();
                             break;
                         case 0xE0:
                         case 0xF0:
-                            SBC();
+                            ec += SBC();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1459,49 +1706,48 @@ namespace Lib6502
                     break;
                 case 0x06:
                     if (0 == evenOdd)
-                        A_ZP0();
+                        ec += A_ZP0();
                     else
                     {
                         if (0 == nibbleHiLo)
-                            A_ZPX();
+                            ec += A_ZPX();
                         else
-                            A_ZPY();
+                            ec += A_ZPY();
                     }
 
                     switch (hi)
                     {
                         case 0x00:
                         case 0x10:
-                            ASL();
-                            ec += 2;
+                            ec += ASL();
                             break;
                         case 0x20:
                         case 0x30:
-                            ROL();
+                            ec += ROL();
                             break;
                         case 0x40:
                         case 0x50:
-                            LSR();
+                            ec += LSR();
                             break;
                         case 0x60:
                         case 0x70:
-                            ROR();
+                            ec += ROR();
                             break;
                         case 0x80:
                         case 0x90:
-                            STX();
+                            ec += STX();
                             break;
                         case 0xA0:
                         case 0xB0:
-                            LDX();
+                            ec += LDX();
                             break;
                         case 0xC0:
                         case 0xD0:
-                            DEC();
+                            ec += DEC();
                             break;
                         case 0xE0:
                         case 0xF0:
-                            INC();
+                            ec += INC();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1510,57 +1756,57 @@ namespace Lib6502
                 //case 0x07:
                 //    break;
                 case 0x08:
-                    A_IMP();
+                    ec += A_IMP();
 
                     switch (hi)
                     {
                         case 0x00:
-                            PHP();
+                            ec += PHP();
                             break;
                         case 0x10:
-                            CLC();
+                            ec += CLC();
                             break;
                         case 0x20:
-                            PLP();
+                            ec += PLP();
                             break;
                         case 0x30:
-                            SEC();
+                            ec += SEC();
                             break;
                         case 0x40:
-                            PHA();
+                            ec += PHA();
                             break;
                         case 0x50:
-                            CLI();
+                            ec += CLI();
                             break;
                         case 0x60:
-                            PLA();
+                            ec += PLA();
                             break;
                         case 0x70:
-                            SEI();
+                            ec += SEI();
                             break;
                         case 0x80:
-                            DEY();
+                            ec += DEY();
                             break;
                         case 0x90:
-                            TYA();
+                            ec += TYA();
                             break;
                         case 0xA0:
-                            TAY();
+                            ec += TAY();
                             break;
                         case 0xB0:
-                            CLV();
+                            ec += CLV();
                             break;
                         case 0xC0:
-                            INY();
+                            ec += INY();
                             break;
                         case 0xD0:
-                            CLD();
+                            ec += CLD();
                             break;
                         case 0xE0:
-                            INX();
+                            ec += INX();
                             break;
                         case 0xF0:
-                            SED();
+                            ec += SED();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1568,46 +1814,44 @@ namespace Lib6502
                     break;
                 case 0x09:
                     if (0 == evenOdd)
-                        A_IMM();
+                        ec += A_IMM();
                     else
-                        A_ABY();
+                        ec += A_ABY();
 
                     switch (hi)
                     {
                         case 0x00:
                         case 0x10:
-                            ORA();
+                            ec += ORA();
                             break;
                         case 0x20:
                         case 0x30:
-                            AND();
-                            ec += 2;
+                            ec += AND();
                             break;
                         case 0x40:
                         case 0x50:
-                            EOR();
+                            ec += EOR();
                             break;
                         case 0x60:
                         case 0x70:
-                            ADC();
-                            ec += 2;
+                            ec += ADC();
                             break;
                         //case 0x80:
                         //    break;
                         case 0x90:
-                            STA();
+                            ec += STA();
                             break;
                         case 0xA0:
                         case 0xB0:
-                            LDA();
+                            ec += LDA();
                             break;
                         case 0xC0:
                         case 0xD0:
-                            CMP();
+                            ec += CMP();
                             break;
                         case 0xE0:
                         case 0xF0:
-                            SBC();
+                            ec += SBC();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1615,52 +1859,62 @@ namespace Lib6502
                     break;
                 case 0x0A:
                     if (0 == nibbleHiLo)
-                        ec = A_ACC();
+                    {
+                        ec += A_ACC();
+                        useAccumulator = true;
+                    }
                     else
-                        ec = A_IMP();
+                        ec += A_IMP();
 
                     switch (hi)
                     {
                         case 0x00:
-                            ec = ASL();
-                            ec += 2;
+                            ec += ASL();
+                            if (useAccumulator)
+                                A = fetched;
                             break;
                         //case 0x10:
                         //    break;
                         case 0x20:
-                            ROL();
+                            ec += ROL();
+                            if (useAccumulator)
+                                A = fetched;
                             break;
                         //case 0x30:
                         //    break;
                         case 0x40:
-                            LSR();
+                            ec += LSR();
+                            if (useAccumulator)
+                                A = fetched;
                             break;
                         //case 0x50:
                         //    break;
                         case 0x60:
-                            ROR();
+                            ec += ROR();
+                            if (useAccumulator)
+                                A = fetched;
                             break;
                         //case 0x70:
                         //    break;
                         case 0x80:
-                            TXA();
+                            ec += TXA();
                             break;
                         case 0x90:
-                            TXS();
+                            ec += TXS();
                             break;
                         case 0xA0:
-                            TAX();
+                            ec += TAX();
                             break;
                         case 0xB0:
-                            TSX();
+                            ec += TSX();
                             break;
                         case 0xC0:
-                            DEX();
+                            ec += DEX();
                             break;
                         //case 0xD0:
                         //    break;
                         case 0xE0:
-                            NOP();
+                            ec += NOP();
                             break;
                         //case 0xF0:
                         //    break;
@@ -1678,46 +1932,46 @@ namespace Lib6502
                         //case 0x10:
                         //    break;
                         case 0x20:
-                            A_ABS();
-                            BIT();
+                            ec += A_ABS();
+                            ec += BIT();
                             break;
                         //case 0x30:
                         //    break;
                         case 0x40:
-                            A_ABS();
-                            JMP();
+                            ec += A_ABS();
+                            ec += JMP();
                             break;
                         //case 0x50:
                         //    break;
                         case 0x60:
-                            A_IND();
-                            JMP();
+                            ec += A_IND();
+                            ec += JMP();
                             break;
                         //case 0x70:
                         //    break;
                         case 0x80:
-                            A_ABS();
-                            STY();
+                            ec += A_ABS();
+                            ec += STY();
                             break;
                         //case 0x90:
                         //    break;
                         case 0xA0:
-                            A_ABS();
-                            LDY();
+                            ec += A_ABS();
+                            ec += LDY();
                             break;
                         case 0xB0:
-                            A_ABX();
-                            LDY();
+                            ec += A_ABX();
+                            ec += LDY();
                             break;
                         case 0xC0:
-                            A_ABS();
-                            CPY();
+                            ec += A_ABS();
+                            ec += CPY();
                             break;
                         //case 0xD0:
                         //    break;
                         case 0xE0:
-                            A_ABS();
-                            CPX();
+                            ec += A_ABS();
+                            ec += CPX();
                             break;
                         //case 0xF0:
                         //    break;
@@ -1735,37 +1989,35 @@ namespace Lib6502
                     {
                         case 0x00:
                         case 0x10:
-                            ORA();
+                            ec += ORA();
                             break;
                         case 0x20:
                         case 0x30:
-                            AND();
-                            ec += 2;
+                            ec += AND();
                             break;
                         case 0x40:
                         case 0x50:
-                            EOR();
+                            ec += EOR();
                             break;
                         case 0x60:
                         case 0x70:
-                            ADC();
-                            ec += 2;
+                            ec += ADC();
                             break;
                         case 0x80:
                         case 0x90:
-                            STA();
+                            ec += STA();
                             break;
                         case 0xA0:
                         case 0xB0:
-                            LDA();
+                            ec += LDA();
                             break;
                         case 0xC0:
                         case 0xD0:
-                            CMP();
+                            ec += CMP();
                             break;
                         case 0xE0:
                         case 0xF0:
-                            SBC();
+                            ec += SBC();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1773,50 +2025,49 @@ namespace Lib6502
                     break;
                 case 0x0E:
                     if (0 == evenOdd)
-                        A_ABS();
+                        ec += A_ABS();
                     else
                     {
                         if (0xB0 == hi)
-                            A_ABY();
+                            ec += A_ABY();
                         else
-                            A_ABX();
+                            ec += A_ABX();
                     }
 
                     switch (hi)
                     {
                         case 0x00:
                         case 0x10:
-                            ASL();
-                            ec += 2;
+                            ec += ASL();
                             break;
                         case 0x20:
                         case 0x30:
-                            ROL();
+                            ec += ROL();
                             break;
                         case 0x40:
                         case 0x50:
-                            LSR();
+                            ec += LSR();
                             break;
                         case 0x60:
                         case 0x70:
-                            ROR();
+                            ec += ROR();
                             break;
                         case 0x80:
-                            STX();
+                            ec += STX();
                             break;
                         //case 0x90:
                         //    break;
                         case 0xA0:
                         case 0xB0:
-                            LDX();
+                            ec += LDX();
                             break;
                         case 0xC0:
                         case 0xD0:
-                            DEC();
+                            ec += DEC();
                             break;
                         case 0xE0:
                         case 0xF0:
-                            INC();
+                            ec += INC();
                             break;
                         default:
                             goto ExecuteOpCode_UnknownOpCode;
@@ -1827,6 +2078,15 @@ namespace Lib6502
                 default:
                     goto ExecuteOpCode_UnknownOpCode;
             }
+
+            //if(addressFunction != null)
+            //    ec += addressFunction();
+
+            //if (operationFunction != null)
+            //    ec += operationFunction();
+
+            //if (useAccumulator)
+            //    A = fetched;
 
             goto ExecuteOpCode_Exit;
 
@@ -1841,6 +2101,115 @@ namespace Lib6502
             return ec;
         }
 
+        internal byte ExecuteOpCode2(byte opcode)
+        {
+            byte hi = (byte)(opcode & 0xF0);
+            byte lo = (byte)(opcode & 0x0F);
+
+            byte evenOdd = (byte)((hi >> 4) & 1);
+            byte nibbleHiLo = (byte)((hi >> 4) & 0x8);
+
+            byte ec = 0; // extra cycles;
+
+            bool useAccumulator = false;
+            Func<byte> fnAddr = null;
+            Func<byte> fnOper = null;
+
+
+            switch(lo)
+            {
+                case 0x00:
+                    switch(hi)
+                    {
+                        case 0x00:
+                            break;
+                        case 0x10:
+                            break;
+                        case 0x20:
+                            break;
+                        case 0x30:
+                            break;
+                        case 0x40:
+                            break;
+                        case 0x50:
+                            break;
+                        case 0x60:
+                            break;
+                        case 0x70:
+                            break;
+                        case 0x80:
+                            break;
+                        case 0x90:
+                            break;
+                        case 0xA0:
+                            break;
+                        case 0xB0:
+                            break;
+                        case 0xC0:
+                            break;
+                        case 0xD0:
+                            break;
+                        case 0xE0:
+                            break;
+                        case 0xF0:
+                            break;
+                        default:
+                            goto ExecuteOpCode2_UnknownOpCode;
+                    }
+                    break;
+                case 0x01:
+                    break;
+                case 0x02:
+                    break;
+                case 0x03:
+                    break;
+                case 0x04:
+                    break;
+                case 0x05:
+                    break;
+                case 0x06:
+                    break;
+                case 0x07:
+                    break;
+                case 0x08:
+                    break;
+                case 0x09:
+                    break;
+                case 0x0A:
+                    break;
+                case 0x0B:
+                    break;
+                case 0x0C:
+                    break;
+                case 0x0D:
+                    break;
+                case 0x0E:
+                    break;
+                case 0x0F:
+                    break;
+                default:
+                    goto ExecuteOpCode2_UnknownOpCode;
+            }
+
+            ec += fnAddr();
+            ec += fnOper();
+
+            if (useAccumulator)
+                A = fetched;
+
+            goto ExecuteOpCode2_Exit;
+
+        ExecuteOpCode2_UnknownOpCode:
+            var errorString = String.Format("Unknown opcode %d", opcode);
+
+            debugStream?.WriteLine(errorString);
+
+            throw new InvalidProgramException(errorString);
+
+        ExecuteOpCode2_Exit:
+            return ec;
+        }
+*/
         /// <summary>
         /// 
         /// </summary>
@@ -1850,6 +2219,8 @@ namespace Lib6502
             {
                 Clock();
             } while (Cycles > 0);
+
+            PC++;
         }
 
         internal void SetInitialState(CpuFlags initialState)
@@ -1887,6 +2258,24 @@ namespace Lib6502
         }
 
         /// <summary>
+        /// Helper function to push the stack pointer, so we don't have to remember if it is incrementing or decrementing
+        /// </summary>
+        private void PushStack(byte value) 
+        {
+            bus.Write(SP, value);
+
+            SP--; 
+        }
+
+        /// <summary>
+        /// Helper function to pop the stack pointer, so we don't have to remember if it is incrementing or decrementing
+        /// </summary>
+        private byte PopStack() 
+        {
+            return bus.Read(SP++);
+        }
+
+        /// <summary>
         /// Read a byte at the specified address
         /// </summary>
         /// <param name="address"></param>
@@ -1906,8 +2295,12 @@ namespace Lib6502
             bus.Write(address, data);
         }
 
-        protected CpuStatus status; // cpu status flags
-        protected byte opcode;      // the current opcode being executed
+        private ushort MakeAddress(byte hi, byte lo)
+        {
+            return (ushort)(((ushort)hi << 8) + (ushort)lo);
+        }
+//        protected CpuFlags status; // cpu status flags
+//        protected byte opcode;      // the current opcode being executed
         internal byte fetched;     // the byte recently Fetched() 
         internal ushort addr_abs;  // absolute address reference
         internal ushort addr_rel;  // relative address reference

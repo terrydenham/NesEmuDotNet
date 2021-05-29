@@ -94,9 +94,9 @@ namespace Lib6502.Tests
 
             sut.ADC();
 
-            Assert.AreEqual(0xFF, sut.A);
+            Assert.AreEqual(0x80, sut.A);
 
-            m6502Tests.AssertFlags(sut, true, false, true, true);
+            m6502Tests.AssertFlags(sut, false, false, true, false);
         }
 
 }

@@ -28,7 +28,7 @@ namespace Lib6502XUnit.Tests
 
         public static CpuState Create(m6502 cpu)
         {
-            return new CpuState(cpu.A, cpu.X, cpu.Y, cpu.Flags, null);
+            return new CpuState(cpu.A, cpu.X, cpu.Y, cpu.Status, null);
         }
 
         public override bool Equals(object obj)

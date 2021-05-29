@@ -46,7 +46,7 @@ namespace Lib6502
 
                     if(mnemonic.Length == 3)
                     {
-
+                        foundMnemonic = true;
                     }
                 }
                 

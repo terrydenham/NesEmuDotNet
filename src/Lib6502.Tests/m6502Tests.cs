@@ -59,7 +59,7 @@ namespace Lib6502.Tests
             Assert.AreEqual((expectedFlags & CpuFlags.Z) == CpuFlags.Z, sut.Z, "Zero flag was not correct");
         }
 
-
+        /*
         #region ADC
         [TestCase(CpuFlags.Empty, 0x01, "ADC #$44", CpuFlags.Empty, Description = "IMM add positive number", ExpectedResult = 0x45)]
         [TestCase(CpuFlags.Empty, 0x01, "ADC #$FF", CpuFlags.C | CpuFlags.V, Description = "IMM add positive number with overflow", ExpectedResult = 0x00)]
@@ -344,6 +344,6 @@ namespace Lib6502.Tests
         }
 
         #endregion
-
+        */
     }
 }
